@@ -32,9 +32,9 @@ router.post(
   placementController.create,
 );
 
-router.get('/', placementController.getAll);
+router.get('/', authorize(UserRole.SUPER_ADMIN, UserRole.ADMIN), placementController.getAll);
 
-router.get('/:id', placementController.getById);
+router.get('/:id', authorize(UserRole.SUPER_ADMIN, UserRole.ADMIN), placementController.getById);
 
 router.put(
   '/:id',

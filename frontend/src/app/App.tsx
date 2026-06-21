@@ -163,6 +163,7 @@ function AppContent() {
           { icon: BarChart2, label: "Reports" },
           { icon: Briefcase, label: "Internship Programs" },
           { icon: Building2, label: "Organizations" },
+          { icon: MapPin, label: "Placements" },
           { icon: Settings, label: "Settings" }
         ];
     }
@@ -258,7 +259,19 @@ function AppContent() {
 
     // Organization & Placements
     if (activeTab === "Organizations") {
-      return <OrganizationDashboard />;
+      return (
+        <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+          <OrganizationDashboard />
+        </ProtectedRoute>
+      );
+    }
+
+    if (activeTab === "Placements") {
+      return (
+        <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN", "SUPERVISOR", "MENTOR"]}>
+          <PlacementDashboard />
+        </ProtectedRoute>
+      );
     }
 
     // Default dashboard views

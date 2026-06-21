@@ -151,7 +151,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { accessToken, user: loggedUser } = resData.data;
         setUser(loggedUser);
         setToken(accessToken);
-        localStorage.setItem("token", accessToken);
+
+        //  Wipe out any existing key to prevent cache issues
+         localStorage.removeItem("accessToken");
+
+          
+             localStorage.setItem("accessToken", accessToken);
+
         return loggedUser;
       } catch (err: any) {
         setError(err.message || "Network error. Connecting via Mock Mode.");
