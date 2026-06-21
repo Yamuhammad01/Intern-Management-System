@@ -13,29 +13,9 @@ import {
   ChevronLeft,
   ChevronRight as ChevronRightIcon,
 } from "lucide-react";
+import { PlacementForm, Placement } from "./PlacementForm";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-interface Placement {
-  id: string;
-  internId: string;
-  internName: string;
-  internEmail: string;
-  matricNumber: string | null;
-  organizationId: string;
-  organizationName: string;
-  organizationSector: string;
-  supervisorId: string | null;
-  supervisorName: string | null;
-  status: string;
-  role: string | null;
-  department: string | null;
-  startDate: string | null;
-  endDate: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface Pagination {
   total: number;
@@ -48,6 +28,7 @@ export function PlacementDashboard() {
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingPlacement, setEditingPlacement] = useState<Placement | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [organizationFilter, setOrganizationFilter] = useState("");
@@ -113,6 +94,11 @@ export function PlacementDashboard() {
     e.preventDefault();
     setPagination((p) => ({ ...p, page: 1 }));
     fetchPlacements();
+  };
+
+  const handleEdit = (placement: Placement) => {
+    setEditingPlacement(placement);
+    setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -240,7 +226,7 @@ export function PlacementDashboard() {
                         <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 text-[10px] font-bold">
                           {placement.internName
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")
                             .toUpperCase()}
                         </div>
@@ -288,6 +274,13 @@ export function PlacementDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => handleEdit(placement)}
+                          className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => handleDelete(placement.id)}
                           className="p-1.5 rounded-md hover:bg-red-50 text-red-600 transition-colors"
@@ -344,33 +337,20 @@ export function PlacementDashboard() {
         )}
       </div>
 
-      {/* Modal placeholder */}
+      {/* Placement Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl border border-black/[0.07] shadow-lg w-full max-w-lg p-6 relative">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-gray-800">New Placement</h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-gray-500">
-              Placement creation will be fully implemented in the next release. For now, placements can be
-              created and managed via the Organization detail view.
-            </p>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <PlacementForm
+          placement={editingPlacement}
+          onClose={() => {
+            setShowForm(false);
+            setEditingPlacement(null);
+          }}
+          onSuccess={() => {
+            setShowForm(false);
+            setEditingPlacement(null);
+            fetchPlacements();
+          }}
+        />
       )}
     </div>
   );
