@@ -44,6 +44,17 @@ export const registerSchema = Joi.object({
     .messages({
       'string.pattern.base': 'Please provide a valid phone number',
     }),
+  role: Joi.string()
+    .valid('SUPER_ADMIN', 'ADMIN', 'SUPERVISOR', 'MENTOR', 'INTERN')
+    .optional(),
+  department: Joi.string()
+    .max(100)
+    .optional()
+    .allow(''),
+  program: Joi.string()
+    .max(100)
+    .optional()
+    .allow(''),
 });
 
 export const loginSchema = Joi.object({

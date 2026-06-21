@@ -39,7 +39,9 @@ export class AuthService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       phone: dto.phone,
-      role: UserRole.INTERN,
+      role: dto.role || UserRole.INTERN,
+      department: dto.department,
+      program: dto.program,
     });
 
     return {

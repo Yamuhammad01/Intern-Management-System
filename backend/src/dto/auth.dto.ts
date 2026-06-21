@@ -7,6 +7,9 @@ export interface RegisterRequestDTO {
   firstName: string;
   lastName: string;
   phone?: string;
+  role?: UserRole;
+  department?: string;
+  program?: string;
 }
 
 export interface RegisterResponseDTO {

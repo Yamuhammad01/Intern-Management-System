@@ -11,6 +11,8 @@ export interface IUserRepository {
     lastName: string;
     phone?: string;
     role?: UserRole;
+    department?: string;
+    program?: string;
   }): Promise<User>;
   update(id: string, data: Partial<User>): Promise<User>;
   updatePassword(id: string, hashedPassword: string): Promise<void>;
