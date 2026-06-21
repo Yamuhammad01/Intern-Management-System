@@ -21,7 +21,8 @@ import {
   Lock,
   Phone,
   Mail,
-  Loader2
+  Loader2,
+  UserCircle
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
@@ -38,11 +39,20 @@ import { InternDashboard } from "./pages/dashboards/InternDashboard";
 import { SupervisorDashboard } from "./pages/dashboards/SupervisorDashboard";
 import { AdminDashboard } from "./pages/dashboards/AdminDashboard";
 
+// Profile
+import { ProfileProvider } from "./pages/profile/ProfileContext";
+import { ProfileDashboard } from "./pages/profile/ProfileDashboard";
+
+// Auth Guards
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
 // ─── Main Application Container ───
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ProfileProvider>
+        <AppContent />
+      </ProfileProvider>
     </AuthProvider>
   );
 }
@@ -115,6 +125,7 @@ function AppContent() {
       case "INTERN":
         return [
           { icon: LayoutDashboard, label: "Dashboard" },
+          { icon: UserCircle, label: "Intern Profile" },
           { icon: ClipboardList, label: "My Tasks" },
           { icon: CalendarCheck, label: "My Attendance" },
           { icon: Star, label: "Mentor Feedback" },
@@ -163,6 +174,14 @@ function AppContent() {
 
   // Handle active navigation content render
   const renderMainContent = () => {
+    if (activeTab === "Intern Profile") {
+      return (
+        <ProtectedRoute allowedRoles={["INTERN", "SUPER_ADMIN", "ADMIN"]}>
+          <ProfileDashboard />
+        </ProtectedRoute>
+      );
+    }
+    
     if (activeTab === "Settings") {
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -334,7 +353,7 @@ function AppContent() {
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-5 relative bg-[#f4f6f8]">
-          {activeTab !== "Dashboard" && activeTab !== "Settings" ? (
+          {activeTab !== "Dashboard" && activeTab !== "Settings" && activeTab !== "Intern Profile" ? (
             /* Tab Placeholder view */
             <div className="bg-white rounded-xl border border-black/[0.07] p-8 shadow-sm flex flex-col items-center justify-center text-center gap-4 max-w-md mx-auto my-12 animate-fade-in">
               <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center text-emerald-600">

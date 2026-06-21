@@ -23,6 +23,8 @@ model User {
   firstName     String
   lastName      String
   phone         String?
+  department    String?
+  program       String?
   isActive      Boolean   @default(true)
   refreshToken  String?
   resetToken    String?
@@ -33,6 +35,7 @@ model User {
 
   refreshTokens     RefreshToken[]
   notifications     Notification[]
+  internProfile     InternProfile?
 
   @@map("users")
 }
@@ -76,4 +79,23 @@ enum NotificationType {
   ERROR
   DEADLINE
   EVALUATION
+}
+
+model InternProfile {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @unique @db.Uuid
+  matricNumber     String?   @unique
+  faculty          String?
+  institution      String?
+  avatarUrl        String?   @db.Text
+  startDate        DateTime?
+  endDate          DateTime?
+  supervisorName   String?
+  organizationName String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("intern_profiles")
 }
