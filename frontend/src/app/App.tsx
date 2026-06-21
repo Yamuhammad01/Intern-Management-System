@@ -22,7 +22,11 @@ import {
   Phone,
   Mail,
   Loader2,
-  UserCircle
+  UserCircle,
+  Building2,
+  MapPin,
+  Globe,
+  PhoneCall
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
@@ -38,6 +42,11 @@ import { ChangePasswordPage } from "./pages/auth/ChangePasswordPage";
 import { InternDashboard } from "./pages/dashboards/InternDashboard";
 import { SupervisorDashboard } from "./pages/dashboards/SupervisorDashboard";
 import { AdminDashboard } from "./pages/dashboards/AdminDashboard";
+
+// Organization & Placement
+import { OrganizationDashboard } from "./pages/organizations/OrganizationDashboard";
+import { OrganizationForm } from "./pages/organizations/OrganizationForm";
+import { PlacementDashboard } from "./pages/organizations/PlacementDashboard";
 
 // Profile
 import { ProfileProvider } from "./pages/profile/ProfileContext";
@@ -153,6 +162,7 @@ function AppContent() {
           { icon: BookOpen, label: "Learning Milestones" },
           { icon: BarChart2, label: "Reports" },
           { icon: Briefcase, label: "Internship Programs" },
+          { icon: Building2, label: "Organizations" },
           { icon: Settings, label: "Settings" }
         ];
     }
@@ -244,6 +254,11 @@ function AppContent() {
           </div>
         </div>
       );
+    }
+
+    // Organization & Placements
+    if (activeTab === "Organizations") {
+      return <OrganizationDashboard />;
     }
 
     // Default dashboard views
@@ -353,7 +368,9 @@ function AppContent() {
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-5 relative bg-[#f4f6f8]">
-          {activeTab !== "Dashboard" && activeTab !== "Settings" && activeTab !== "Intern Profile" ? (
+          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements"].includes(activeTab) ? (
+            renderMainContent()
+          ) : (
             /* Tab Placeholder view */
             <div className="bg-white rounded-xl border border-black/[0.07] p-8 shadow-sm flex flex-col items-center justify-center text-center gap-4 max-w-md mx-auto my-12 animate-fade-in">
               <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
@@ -372,8 +389,6 @@ function AppContent() {
                 Return to Dashboard
               </button>
             </div>
-          ) : (
-            renderMainContent()
           )}
         </main>
       </div>

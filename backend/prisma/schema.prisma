@@ -36,6 +36,7 @@ model User {
   refreshTokens     RefreshToken[]
   notifications     Notification[]
   internProfile     InternProfile?
+  supervisorPlacements Placement[] @relation("PlacementSupervisor")
 
   @@map("users")
 }
@@ -95,7 +96,80 @@ model InternProfile {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placements Placement[]
 
   @@map("intern_profiles")
+}
+
+// ==============================
+// ORGANIZATION & PLACEMENT
+// ==============================
+
+enum IndustrySector {
+  TECHNOLOGY
+  FINANCE
+  HEALTHCARE
+  EDUCATION
+  ENGINEERING
+  MANUFACTURING
+  RETAIL
+  MEDIA
+  CONSULTING
+  NON_PROFIT
+  GOVERNMENT
+  OTHER
+}
+
+enum PlacementStatus {
+  ACTIVE
+  COMPLETED
+  TERMINATED
+  ON_HOLD
+  PENDING
+}
+
+model Organization {
+  id          String         @id @default(uuid()) @db.Uuid
+  name        String
+  address     String?
+  email       String?
+  phone       String?
+  website     String?
+  sector      IndustrySector @default(OTHER)
+  description String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  placements Placement[]
+
+  @@index([sector])
+  @@index([name])
+  @@map("organizations")
+}
+
+model Placement {
+  id             String          @id @default(uuid()) @db.Uuid
+  internId       String          @db.Uuid
+  organizationId String          @db.Uuid
+  supervisorId   String?         @db.Uuid
+  status         PlacementStatus @default(ACTIVE)
+  role           String?
+  department     String?
+  startDate      DateTime?
+  endDate        DateTime?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  internProfile InternProfile @relation(fields: [internId], references: [id], onDelete: Cascade)
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supervisor    User?         @relation("PlacementSupervisor", fields: [supervisorId], references: [id])
+
+  @@unique([internId, organizationId])
+  @@index([organizationId])
+  @@index([supervisorId])
+  @@index([status])
+  @@map("placements")
 }

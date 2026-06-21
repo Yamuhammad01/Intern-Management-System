@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { 
   ChevronLeft, ChevronRight, MoreHorizontal, ArrowUpRight, 
-  Star, ChevronDown, CheckCircle, XCircle, ShieldAlert 
+  Star, ChevronDown, CheckCircle, XCircle, ShieldAlert,
+  Building2, Briefcase
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
 
@@ -95,8 +96,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
 
   // Demo Registration Approvals for Administrator Real RBAC Demonstration
   const [registrations, setRegistrations] = useState([
-    { email: "peter.jones@student.edu", name: "Peter Jones", role: "INTERN", entity: "Data Analytics", date: "Just now" },
-    { email: "julia.roberts@faculty.edu", name: "Julia Roberts", role: "SUPERVISOR", entity: "Product & UX Design", date: "10m ago" }
+    { email: "sule.sani@student.edu", name: "Suleiman Sani", role: "INTERN", entity: "Data Analytics", date: "Just now" },
+    { email: "john.moses@faculty.edu", name: "John Moses", role: "SUPERVISOR", entity: "Product & UX Design", date: "10m ago" }
   ]);
 
   const handleApproveRegistration = (email: string, action: "Approve" | "Reject") => {
@@ -139,6 +140,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
             <p className="text-[11px] text-gray-400 leading-snug">{c.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Row 1.5: Admin Quick Access */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+                <Building2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-[13px] font-bold text-gray-800">Organizations</h4>
+                <p className="text-[10px] text-gray-500">Manage partner organizations</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.hash = "organizations"}
+              className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5"
+            >
+              View All <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Total</p>
+              <p className="text-sm font-bold text-gray-800">24</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Active</p>
+              <p className="text-sm font-bold text-emerald-600">21</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Placements</p>
+              <p className="text-sm font-bold text-gray-800">86</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+                <Briefcase className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-[13px] font-bold text-gray-800">Placements</h4>
+                <p className="text-[10px] text-gray-500">Manage intern assignments</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.hash = "placements"}
+              className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5"
+            >
+              View All <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Active</p>
+              <p className="text-sm font-bold text-emerald-600">72</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Pending</p>
+              <p className="text-sm font-bold text-amber-600">8</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] text-gray-500">Completed</p>
+              <p className="text-sm font-bold text-blue-600">6</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Row 1.5: Pending Registration Approvals (Real RBAC admin module) */}
