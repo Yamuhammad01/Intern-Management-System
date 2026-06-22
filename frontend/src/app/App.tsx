@@ -52,6 +52,13 @@ import { PlacementDashboard } from "./pages/organizations/PlacementDashboard";
 import { ProfileProvider } from "./pages/profile/ProfileContext";
 import { ProfileDashboard } from "./pages/profile/ProfileDashboard";
 
+// Logbook
+import { LogDashboard } from "./pages/logbook/LogDashboard";
+import { CreateLogPage } from "./pages/logbook/CreateLogPage";
+import { EditLogPage } from "./pages/logbook/EditLogPage";
+import { LogHistoryPage } from "./pages/logbook/LogHistoryPage";
+import { LogDetailPage } from "./pages/logbook/LogDetailPage";
+
 // Auth Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -71,6 +78,35 @@ function AppContent() {
   const [authScreen, setAuthScreen] = useState<"welcome" | "login" | "register" | "forgot" | "reset">("welcome");
   const [resetToken, setResetToken] = useState<string>("");
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [subScreen, setSubScreen] = useState<string | null>(null);
+  const [subParams, setSubParams] = useState<any>({});
+  
+  // Handle logbook sub-navigation
+  const handleLogbookNavigate = (tab: string, params?: any) => {
+    if (tab === "Logbook") {
+      setSubScreen(null);
+      setSubParams({});
+    } else if (tab === "Create Log") {
+      setSubScreen("create");
+      setSubParams({ type: params?.type || "DAILY" });
+    } else if (tab === "Edit Log") {
+      setSubScreen("edit");
+      setSubParams({ logId: params?.logId });
+    } else if (tab === "Log History") {
+      setSubScreen("history");
+      setSubParams({});
+    } else if (tab === "Log Detail") {
+      setSubScreen("detail");
+      setSubParams({ logId: params?.logId });
+    }
+  };
+  
+  // Reset sub-screen when changing tabs
+  const handleTabChange = (label: string) => {
+    setActiveTab(label);
+    setSubScreen(null);
+    setSubParams({});
+  };
   
   // Custom activities state for real-time supervisor updates
   const [activities, setActivities] = useState([
@@ -134,8 +170,8 @@ function AppContent() {
       case "INTERN":
         return [
           { icon: LayoutDashboard, label: "Dashboard" },
+          { icon: ClipboardList, label: "Logbook" },
           { icon: UserCircle, label: "Intern Profile" },
-          { icon: ClipboardList, label: "My Tasks" },
           { icon: CalendarCheck, label: "My Attendance" },
           { icon: Star, label: "Mentor Feedback" },
           { icon: Settings, label: "Settings" }
@@ -274,6 +310,19 @@ function AppContent() {
       );
     }
 
+    // Logbook module
+    if (activeTab === "Logbook") {
+      return (
+        <ProtectedRoute allowedRoles={["INTERN"]}>
+          {subScreen === null && <LogDashboard onNavigate={handleLogbookNavigate} />}
+          {subScreen === "create" && <CreateLogPage onNavigate={handleLogbookNavigate} preselectedType={subParams.type} />}
+          {subScreen === "edit" && <EditLogPage onNavigate={handleLogbookNavigate} logId={subParams.logId} />}
+          {subScreen === "history" && <LogHistoryPage onNavigate={handleLogbookNavigate} />}
+          {subScreen === "detail" && <LogDetailPage onNavigate={handleLogbookNavigate} logId={subParams.logId} />}
+        </ProtectedRoute>
+      );
+    }
+
     // Default dashboard views
     if (user.role === "INTERN") {
       return <InternDashboard user={user} />;
@@ -302,10 +351,7 @@ function AppContent() {
           {navItems.map(({ icon: Icon, label }) => (
             <button
               key={label}
-              onClick={() => {
-                // If clicking other tabs, show placeholder message by setting active tab
-                setActiveTab(label);
-              }}
+              onClick={() => handleTabChange(label)}
               className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-colors text-left ${
                 activeTab === label
                   ? "bg-[#10b981] text-white shadow-sm"
@@ -381,7 +427,7 @@ function AppContent() {
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-5 relative bg-[#f4f6f8]">
-          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements"].includes(activeTab) ? (
+          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook"].includes(activeTab) ? (
             renderMainContent()
           ) : (
             /* Tab Placeholder view */

@@ -37,6 +37,8 @@ model User {
   notifications     Notification[]
   internProfile     InternProfile?
   supervisorPlacements Placement[] @relation("PlacementSupervisor")
+  logEntries           LogEntry[]
+  reviewedLogs         LogEntry[]  @relation("LogReviewer")
 
   @@map("users")
 }
@@ -172,4 +174,46 @@ model Placement {
   @@index([supervisorId])
   @@index([status])
   @@map("placements")
+}
+
+// ==============================
+// DIGITAL ACTIVITY LOGBOOK
+// ==============================
+
+enum LogEntryType {
+  DAILY
+  WEEKLY
+}
+
+enum LogStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model LogEntry {
+  id          String       @id @default(uuid()) @db.Uuid
+  internId    String       @db.Uuid
+  entryType   LogEntryType @default(DAILY)
+  status      LogStatus    @default(DRAFT)
+  logDate     DateTime
+  activity    String       @db.Text
+  skills      String?      @db.Text
+  hoursWorked Float?
+  notes       String?      @db.Text
+  reviewedBy  String?      @db.Uuid
+  reviewedAt  DateTime?
+  reviewNotes String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  intern    User  @relation(fields: [internId], references: [id], onDelete: Cascade)
+  reviewer  User? @relation("LogReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([internId])
+  @@index([internId, status])
+  @@index([internId, logDate])
+  @@index([reviewedBy])
+  @@map("log_entries")
 }
