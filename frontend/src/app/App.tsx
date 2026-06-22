@@ -25,8 +25,7 @@ import {
   UserCircle,
   Building2,
   MapPin,
-  Globe,
-  PhoneCall
+  ClipboardCheck
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
@@ -44,7 +43,7 @@ import { AdminDashboard } from "./pages/dashboards/AdminDashboard";
 
 // Organization & Placement
 import { OrganizationDashboard } from "./pages/organizations/OrganizationDashboard";
-import { OrganizationForm } from "./pages/organizations/OrganizationForm";
+// import { OrganizationForm } from "./pages/organizations/OrganizationForm";
 import { PlacementDashboard } from "./pages/organizations/PlacementDashboard";
 
 // Profile
@@ -65,6 +64,14 @@ import { SubmittedLogsPage } from "./pages/supervisor/SubmittedLogsPage";
 import { LogReviewPage } from "./pages/supervisor/LogReviewPage";
 import { FeedbackHistoryPage } from "./pages/supervisor/FeedbackHistoryPage";
 import { InternProgressPage } from "./pages/supervisor/InternProgressPage";
+
+// Evaluations
+import {
+  EvaluationDashboardPage,
+  EvaluationFormPage,
+  EvaluationSummaryPage,
+  EvaluationReportPage,
+} from "./pages/evaluations/index";
 
 // Auth Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -128,7 +135,15 @@ function AppContent() {
     } else if (tab === "Intern Progress") {
       setSubScreen("supervisor-progress");
       setSubParams({ internId: params?.internId });
+    } else if (tab === "Evaluations") {
+      setSubScreen("evaluations-dashboard");
+      setSubParams({});
     }
+  };
+
+  const handleEvaluationNavigate = (view: string, params?: any) => {
+    setSubScreen(`evaluations-${view}`);
+    setSubParams(params || {});
   };
 
   // Reset sub-screen when changing tabs
@@ -213,6 +228,7 @@ function AppContent() {
           { icon: Users, label: "Supervise" },
           { icon: ClipboardList, label: "Review Logs" },
           { icon: MessageSquare, label: "Feedback" },
+          { icon: ClipboardCheck, label: "Evaluations" },
           { icon: Settings, label: "Settings" }
         ];
       case "ADMIN":
@@ -230,6 +246,7 @@ function AppContent() {
           { icon: Briefcase, label: "Internship Programs" },
           { icon: Building2, label: "Organizations" },
           { icon: MapPin, label: "Placements" },
+          { icon: ClipboardCheck, label: "Evaluations" },
           { icon: Settings, label: "Settings" }
         ];
     }
@@ -363,6 +380,10 @@ function AppContent() {
           {subScreen === "supervisor-review" && <LogReviewPage onNavigate={handleSupervisorNavigate} logId={subParams.logId} internId={subParams.internId} />}
           {subScreen === "supervisor-feedback" && <FeedbackHistoryPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "supervisor-progress" && <InternProgressPage onNavigate={handleSupervisorNavigate} internId={subParams.internId} />}
+          {subScreen === "evaluations-dashboard" && <EvaluationDashboardPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "evaluations-form" && <EvaluationFormPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "evaluations-summary" && <EvaluationSummaryPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "evaluations-report" && <EvaluationReportPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === null && <SupervisorDashboardPage onNavigate={handleSupervisorNavigate} />}
         </ProtectedRoute>
       );
@@ -391,7 +412,7 @@ function AppContent() {
         {/* Nav items */}
         <nav className="flex-1 px-2.5 py-3 space-y-0.5">
           {navItems.map(({ icon: Icon, label }) => {
-            const isSupervisorNav = user && (user.role === "SUPERVISOR" || user.role === "MENTOR") && ["Supervise", "Review Logs", "Feedback"].includes(label);
+            const isSupervisorNav = user && (user.role === "SUPERVISOR" || user.role === "MENTOR") && ["Supervise", "Review Logs", "Feedback", "Evaluations"].includes(label);
             return (
               <button
                 key={label}

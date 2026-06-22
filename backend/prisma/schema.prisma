@@ -41,6 +41,9 @@ model User {
   reviewedLogs         LogEntry[]  @relation("LogReviewer")
   supervisorFeedbacks  Feedback[]  @relation("SupervisorFeedback")
   internFeedbacks      Feedback[]  @relation("InternFeedback")
+  evaluatedInterns     Evaluation[] @relation("EvaluationSupervisor")
+  reviewedEvaluations  Evaluation[] @relation("EvaluationReviewer")
+  internEvaluations    Evaluation[] @relation("EvaluationIntern")
 
   @@map("users")
 }
@@ -84,6 +87,61 @@ enum NotificationType {
   ERROR
   DEADLINE
   EVALUATION
+}
+
+// ==============================
+// PERFORMANCE EVALUATION
+// ==============================
+
+enum EvaluationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REVIEWED
+}
+
+model Evaluation {
+  id              String            @id @default(uuid()) @db.Uuid
+  internId        String            @db.Uuid
+  supervisorId    String            @db.Uuid
+  placementId     String            @db.Uuid
+  status          EvaluationStatus  @default(PENDING)
+  
+  // Evaluation Criteria Scores (1-10)
+  attendance      Int?              @db.SmallInt
+  technicalSkills Int?              @db.SmallInt
+  communication   Int?              @db.SmallInt
+  teamwork        Int?              @db.SmallInt
+  initiative      Int?              @db.SmallInt
+  problemSolving  Int?              @db.SmallInt
+  professionalConduct Int?          @db.SmallInt
+  
+  // Calculated overall score
+  overallScore    Float?
+  
+  // Additional fields
+  strengths       String?           @db.Text
+  improvements    String?           @db.Text
+  comments        String?           @db.Text
+  
+  // Review tracking
+  reviewedBy      String?           @db.Uuid
+  reviewedAt      DateTime?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  intern          User              @relation("EvaluationIntern", fields: [internId], references: [id], onDelete: Cascade)
+  supervisor      User              @relation("EvaluationSupervisor", fields: [supervisorId], references: [id], onDelete: Cascade)
+  reviewer        User?             @relation("EvaluationReviewer", fields: [reviewedBy], references: [id])
+  placement       Placement         @relation("PlacementEvaluations", fields: [placementId], references: [id], onDelete: Cascade)
+
+  @@index([internId])
+  @@index([supervisorId])
+  @@index([placementId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("evaluations")
 }
 
 model InternProfile {
@@ -170,6 +228,8 @@ model Placement {
   internProfile InternProfile @relation(fields: [internId], references: [id], onDelete: Cascade)
   organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   supervisor    User?         @relation("PlacementSupervisor", fields: [supervisorId], references: [id])
+
+  evaluations Evaluation[] @relation("PlacementEvaluations")
 
   @@unique([internId, organizationId])
   @@index([organizationId])

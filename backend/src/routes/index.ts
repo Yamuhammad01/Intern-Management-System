@@ -6,6 +6,7 @@ import placementRoutes from './placement.routes';
 import logbookRoutes from './logbook.routes';
 import supervisorRoutes from './supervisor.routes';
 import userRoutes from './user.routes';
+import evaluationRoutes from './evaluation.routes';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/placements', placementRoutes);
 router.use('/logbook', logbookRoutes);
 router.use('/supervisor', supervisorRoutes);
 router.use('/users', userRoutes);
+router.use('/evaluations', evaluationRoutes);
 
 export default router;
