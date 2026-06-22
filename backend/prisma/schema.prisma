@@ -39,6 +39,8 @@ model User {
   supervisorPlacements Placement[] @relation("PlacementSupervisor")
   logEntries           LogEntry[]
   reviewedLogs         LogEntry[]  @relation("LogReviewer")
+  supervisorFeedbacks  Feedback[]  @relation("SupervisorFeedback")
+  internFeedbacks      Feedback[]  @relation("InternFeedback")
 
   @@map("users")
 }
@@ -210,10 +212,48 @@ model LogEntry {
 
   intern    User  @relation(fields: [internId], references: [id], onDelete: Cascade)
   reviewer  User? @relation("LogReviewer", fields: [reviewedBy], references: [id])
+  feedbacks Feedback[]
 
   @@index([internId])
   @@index([internId, status])
   @@index([internId, logDate])
   @@index([reviewedBy])
   @@map("log_entries")
+}
+
+// ==============================
+// SUPERVISOR FEEDBACK
+// ==============================
+
+enum FeedbackType {
+  GENERAL
+  PERFORMANCE
+  SKILLS
+  CONDUCT
+  GOAL
+}
+
+model Feedback {
+  id          String       @id @default(uuid()) @db.Uuid
+  supervisorId String      @db.Uuid
+  internId    String       @db.Uuid
+  logEntryId  String?      @db.Uuid
+  type        FeedbackType @default(GENERAL)
+  rating      Int?         @db.SmallInt
+  content     String       @db.Text
+  strengths   String?      @db.Text
+  improvements String?     @db.Text
+  isPrivate   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  supervisor User      @relation("SupervisorFeedback", fields: [supervisorId], references: [id], onDelete: Cascade)
+  intern     User      @relation("InternFeedback", fields: [internId], references: [id], onDelete: Cascade)
+  logEntry   LogEntry? @relation(fields: [logEntryId], references: [id], onDelete: SetNull)
+
+  @@index([supervisorId])
+  @@index([internId])
+  @@index([logEntryId])
+  @@index([createdAt])
+  @@map("feedbacks")
 }

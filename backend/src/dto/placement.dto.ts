@@ -3,7 +3,7 @@ import { PlacementStatus } from '@prisma/client';
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
 
 export interface CreatePlacementRequestDTO {
-  internProfileId: string;
+  internId: string;
   organizationId: string;
   supervisorId?: string;
   status?: PlacementStatus;

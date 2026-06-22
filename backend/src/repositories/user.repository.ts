@@ -75,4 +75,11 @@ export class UserRepository implements IUserRepository {
       data: { refreshToken },
     });
   }
+
+  async findByRole(role: string) {
+    return prisma.user.findMany({
+      where: { role: role as any },
+      include: { internProfile: true },
+    });
+  }
 }

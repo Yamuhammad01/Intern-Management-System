@@ -112,8 +112,8 @@ export function PlacementForm({ placement, onClose, onSuccess }: PlacementFormPr
         const orgsData = await orgsRes.json();
         const supervisorsData = await supervisorsRes.json();
 
-        if (internsData.success && Array.isArray(internsData.data?.users)) {
-          const mappedInterns: Intern[] = internsData.data.users.map((u: any) => ({
+        if (internsData.success && Array.isArray(internsData.data)) {
+          const mappedInterns: Intern[] = internsData.data.map((u: any) => ({
             id: u.internProfile?.id || u.id,
             userId: u.id,
             matricNumber: u.internProfile?.matricNumber || null,
@@ -130,8 +130,14 @@ export function PlacementForm({ placement, onClose, onSuccess }: PlacementFormPr
           setOrganizations(orgsData.data.organizations);
         }
 
-        if (supervisorsData.success && Array.isArray(supervisorsData.data?.users)) {
-          setSupervisors(supervisorsData.data.users);
+        if (supervisorsData.success && Array.isArray(supervisorsData.data)) {
+          const mappedSupervisors: SupervisorOption[] = supervisorsData.data.map((u: any) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email,
+          }));
+          setSupervisors(mappedSupervisors);
         }
       } catch (err) {
         console.error("Failed to fetch form options:", err);

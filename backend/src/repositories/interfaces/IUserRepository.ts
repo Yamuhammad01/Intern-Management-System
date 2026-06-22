@@ -19,4 +19,5 @@ export interface IUserRepository {
   updateResetToken(id: string, resetToken: string | null, resetTokenExp: Date | null): Promise<void>;
   updateLastLogin(id: string): Promise<void>;
   updateRefreshToken(id: string, refreshToken: string | null): Promise<void>;
+  findByRole(role: string): Promise<any[]>;
 }

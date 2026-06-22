@@ -1,9 +1,9 @@
-import { PrismaClient, Prisma, LogEntry } from '@prisma/client';
+import { Prisma, LogEntry } from '@prisma/client';
 import { ILogEntryRepository } from './interfaces/ILogEntryRepository';
 import prisma from '../config/database';
 
 export class LogEntryRepository implements ILogEntryRepository {
-  private readonly prisma: PrismaClient;
+  private readonly prisma: any;
 
   constructor() {
     this.prisma = prisma;

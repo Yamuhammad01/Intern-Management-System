@@ -26,7 +26,7 @@ export class PlacementService {
     }
 
     const existing = await this.placementRepo.findByInternAndOrganization(
-      dto.internProfileId,
+      dto.internId,
       dto.organizationId,
     );
     if (existing) {
@@ -34,7 +34,7 @@ export class PlacementService {
     }
 
     const placement = await this.placementRepo.create({
-      internProfile: { connect: { id: dto.internProfileId } },
+      internProfile: { connect: { id: dto.internId } },
       organization: { connect: { id: dto.organizationId } },
       ...(dto.supervisorId && {
         supervisor: { connect: { id: dto.supervisorId as string } },

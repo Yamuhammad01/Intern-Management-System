@@ -4,9 +4,9 @@ import { PlacementStatus } from '@prisma/client';
 const statusValues = Object.values(PlacementStatus);
 
 export const createPlacementSchema = Joi.object({
-  internProfileId: Joi.string().uuid().required().messages({
-    'string.uuid': 'Invalid intern profile ID',
-    'any.required': 'Intern profile ID is required',
+  internId: Joi.string().uuid().required().messages({
+    'string.uuid': 'Invalid intern ID',
+    'any.required': 'Intern ID is required',
   }),
   organizationId: Joi.string().uuid().required().messages({
     'string.uuid': 'Invalid organization ID',

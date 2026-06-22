@@ -49,9 +49,9 @@ const avatarLimiter = rateLimit({
 // All profile routes require authentication
 router.use(authenticate);
 
-// All profile routes require INTERN role (users manage their own profile)
-// SUPER_ADMIN and ADMIN have access to all
-router.use(authorize('INTERN', 'SUPER_ADMIN', 'ADMIN'));
+// All profile routes require authentication
+// All authenticated roles can access their own profile
+router.use(authorize('INTERN', 'SUPER_ADMIN', 'ADMIN', 'SUPERVISOR', 'MENTOR'));
 
 // GET  /api/profile/me         — fetch current user's profile
 router.get('/me', profileLimiter, profileController.getProfile);

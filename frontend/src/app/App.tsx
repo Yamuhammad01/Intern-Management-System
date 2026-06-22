@@ -40,7 +40,6 @@ import { ChangePasswordPage } from "./pages/auth/ChangePasswordPage";
 
 // Dashboard Views
 import { InternDashboard } from "./pages/dashboards/InternDashboard";
-import { SupervisorDashboard } from "./pages/dashboards/SupervisorDashboard";
 import { AdminDashboard } from "./pages/dashboards/AdminDashboard";
 
 // Organization & Placement
@@ -58,6 +57,14 @@ import { CreateLogPage } from "./pages/logbook/CreateLogPage";
 import { EditLogPage } from "./pages/logbook/EditLogPage";
 import { LogHistoryPage } from "./pages/logbook/LogHistoryPage";
 import { LogDetailPage } from "./pages/logbook/LogDetailPage";
+
+// Supervisor
+import { SupervisorDashboard as SupervisorDashboardPage } from "./pages/supervisor/SupervisorDashboard";
+import { InternListPage } from "./pages/supervisor/InternListPage";
+import { SubmittedLogsPage } from "./pages/supervisor/SubmittedLogsPage";
+import { LogReviewPage } from "./pages/supervisor/LogReviewPage";
+import { FeedbackHistoryPage } from "./pages/supervisor/FeedbackHistoryPage";
+import { InternProgressPage } from "./pages/supervisor/InternProgressPage";
 
 // Auth Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -100,7 +107,30 @@ function AppContent() {
       setSubParams({ logId: params?.logId });
     }
   };
-  
+
+  // Handle supervisor sub-navigation
+  const handleSupervisorNavigate = (tab: string, params?: any) => {
+    if (tab === "Dashboard") {
+      setSubScreen("supervisor-dashboard");
+      setSubParams({});
+    } else if (tab === "Supervise") {
+      setSubScreen("supervisor-interns");
+      setSubParams({});
+    } else if (tab === "Review Logs") {
+      setSubScreen("supervisor-submitted");
+      setSubParams({});
+    } else if (tab === "Log Review") {
+      setSubScreen("supervisor-review");
+      setSubParams({ logId: params?.logId, internId: params?.internId });
+    } else if (tab === "Feedback") {
+      setSubScreen("supervisor-feedback");
+      setSubParams({});
+    } else if (tab === "Intern Progress") {
+      setSubScreen("supervisor-progress");
+      setSubParams({ internId: params?.internId });
+    }
+  };
+
   // Reset sub-screen when changing tabs
   const handleTabChange = (label: string) => {
     setActiveTab(label);
@@ -180,9 +210,9 @@ function AppContent() {
       case "MENTOR":
         return [
           { icon: LayoutDashboard, label: "Dashboard" },
-          { icon: Users, label: "My Interns" },
-          { icon: CalendarCheck, label: "Log Attendance" },
-          { icon: ClipboardList, label: "Review Tasks" },
+          { icon: Users, label: "Supervise" },
+          { icon: ClipboardList, label: "Review Logs" },
+          { icon: MessageSquare, label: "Feedback" },
           { icon: Settings, label: "Settings" }
         ];
       case "ADMIN":
@@ -323,12 +353,24 @@ function AppContent() {
       );
     }
 
+    // Supervisor / Mentor screens
+    if (user.role === "SUPERVISOR" || user.role === "MENTOR") {
+      return (
+        <ProtectedRoute allowedRoles={["SUPERVISOR", "MENTOR", "ADMIN", "SUPER_ADMIN"]}>
+          {subScreen === "supervisor-dashboard" && <SupervisorDashboardPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "supervisor-interns" && <InternListPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "supervisor-submitted" && <SubmittedLogsPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "supervisor-review" && <LogReviewPage onNavigate={handleSupervisorNavigate} logId={subParams.logId} internId={subParams.internId} />}
+          {subScreen === "supervisor-feedback" && <FeedbackHistoryPage onNavigate={handleSupervisorNavigate} />}
+          {subScreen === "supervisor-progress" && <InternProgressPage onNavigate={handleSupervisorNavigate} internId={subParams.internId} />}
+          {subScreen === null && <SupervisorDashboardPage onNavigate={handleSupervisorNavigate} />}
+        </ProtectedRoute>
+      );
+    }
+
     // Default dashboard views
     if (user.role === "INTERN") {
       return <InternDashboard user={user} />;
-    }
-    if (user.role === "SUPERVISOR" || user.role === "MENTOR") {
-      return <SupervisorDashboard user={user} onAddActivity={handleAddActivity} />;
     }
     return <AdminDashboard user={user} activities={activities} onAddActivity={handleAddActivity} />;
   };
@@ -348,20 +390,23 @@ function AppContent() {
 
         {/* Nav items */}
         <nav className="flex-1 px-2.5 py-3 space-y-0.5">
-          {navItems.map(({ icon: Icon, label }) => (
-            <button
-              key={label}
-              onClick={() => handleTabChange(label)}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-colors text-left ${
-                activeTab === label
-                  ? "bg-[#10b981] text-white shadow-sm"
-                  : "text-[#a7f3d0] hover:bg-white/[0.07] hover:text-white"
-              }`}
+          {navItems.map(({ icon: Icon, label }) => {
+            const isSupervisorNav = user && (user.role === "SUPERVISOR" || user.role === "MENTOR") && ["Supervise", "Review Logs", "Feedback"].includes(label);
+            return (
+              <button
+                key={label}
+                onClick={() => isSupervisorNav ? handleSupervisorNavigate(label) : handleTabChange(label)}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-colors text-left ${
+                  activeTab === label
+                    ? "bg-[#10b981] text-white shadow-sm"
+                    : "text-[#a7f3d0] hover:bg-white/[0.07] hover:text-white"
+                }`}
             >
               <Icon className="w-[15px] h-[15px] shrink-0" />
               {label}
             </button>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Promo card */}
