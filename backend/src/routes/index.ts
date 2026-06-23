@@ -7,6 +7,7 @@ import logbookRoutes from './logbook.routes';
 import supervisorRoutes from './supervisor.routes';
 import userRoutes from './user.routes';
 import evaluationRoutes from './evaluation.routes';
+import internEvaluationRoutes from './intern-evaluation.routes';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/logbook', logbookRoutes);
 router.use('/supervisor', supervisorRoutes);
 router.use('/users', userRoutes);
 router.use('/evaluations', evaluationRoutes);
+router.use('/intern/evaluations', internEvaluationRoutes);
 
 export default router;

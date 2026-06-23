@@ -41,6 +41,10 @@ import { ChangePasswordPage } from "./pages/auth/ChangePasswordPage";
 import { InternDashboard } from "./pages/dashboards/InternDashboard";
 import { AdminDashboard } from "./pages/dashboards/AdminDashboard";
 
+// Intern Evaluation
+import { EvaluationResultsPage } from "./pages/intern/EvaluationResultsPage";
+import { EvaluationDetailPage } from "./pages/intern/EvaluationDetailPage";
+
 // Organization & Placement
 import { OrganizationDashboard } from "./pages/organizations/OrganizationDashboard";
 // import { OrganizationForm } from "./pages/organizations/OrganizationForm";
@@ -96,6 +100,17 @@ function AppContent() {
   const [subParams, setSubParams] = useState<any>({});
   
   // Handle logbook sub-navigation
+  // Handle intern evaluation sub-navigation
+  const handleInternEvalNavigate = (view: string, params?: any) => {
+    if (view === "evaluations") {
+      setSubScreen("intern-evaluations");
+      setSubParams({});
+    } else if (view === "evaluation-detail") {
+      setSubScreen("intern-evaluation-detail");
+      setSubParams({ evaluationId: params?.evaluationId });
+    }
+  };
+
   const handleLogbookNavigate = (tab: string, params?: any) => {
     if (tab === "Logbook") {
       setSubScreen(null);
@@ -222,6 +237,7 @@ function AppContent() {
           { icon: UserCircle, label: "Intern Profile" },
           { icon: CalendarCheck, label: "My Attendance" },
           { icon: Star, label: "Mentor Feedback" },
+          { icon: TrendingUp, label: "My Evaluations" },
           { icon: Settings, label: "Settings" }
         ];
       case "SUPERVISOR":
@@ -404,6 +420,17 @@ function AppContent() {
       );
     }
 
+    // Intern My Evaluations module
+    if (user.role === "INTERN" && activeTab === "My Evaluations") {
+      return (
+        <ProtectedRoute allowedRoles={["INTERN"]}>
+          {subScreen === "intern-evaluations" && <EvaluationResultsPage onNavigate={handleInternEvalNavigate} />}
+          {subScreen === "intern-evaluation-detail" && <EvaluationDetailPage evaluationId={subParams.evaluationId} onNavigate={handleInternEvalNavigate} />}
+          {subScreen === null && <EvaluationResultsPage onNavigate={handleInternEvalNavigate} />}
+        </ProtectedRoute>
+      );
+    }
+
     // Default dashboard views
     if (user.role === "INTERN") {
       return <InternDashboard user={user} />;
@@ -519,7 +546,7 @@ function AppContent() {
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-5 relative bg-[#f4f6f8]">
-          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook"].includes(activeTab) ? (
+          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook", "My Evaluations"].includes(activeTab) ? (
             renderMainContent()
           ) : (
             /* Tab Placeholder view */
