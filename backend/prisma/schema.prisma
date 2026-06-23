@@ -43,7 +43,6 @@ model User {
   internFeedbacks      Feedback[]  @relation("InternFeedback")
   evaluatedInterns     Evaluation[] @relation("EvaluationSupervisor")
   reviewedEvaluations  Evaluation[] @relation("EvaluationReviewer")
-  internEvaluations    Evaluation[] @relation("EvaluationIntern")
 
   @@map("users")
 }
@@ -131,7 +130,7 @@ model Evaluation {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
-  intern          User              @relation("EvaluationIntern", fields: [internId], references: [id], onDelete: Cascade)
+  intern      InternProfile         @relation("EvaluationIntern", fields: [internId], references: [id], onDelete: Cascade)
   supervisor      User              @relation("EvaluationSupervisor", fields: [supervisorId], references: [id], onDelete: Cascade)
   reviewer        User?             @relation("EvaluationReviewer", fields: [reviewedBy], references: [id])
   placement       Placement         @relation("PlacementEvaluations", fields: [placementId], references: [id], onDelete: Cascade)
@@ -160,6 +159,7 @@ model InternProfile {
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   placements Placement[]
+  evaluations Evaluation[] @relation("EvaluationIntern") 
 
   @@map("intern_profiles")
 }

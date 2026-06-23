@@ -4,6 +4,7 @@ import { IOrganizationRepository } from '../repositories/interfaces/IOrganizatio
 import { IUserRepository } from '../repositories/interfaces/IUserRepository';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
+import prisma from '../config/database';
 import {
   CreatePlacementRequestDTO,
   PlacementResponseDTO,
@@ -25,8 +26,22 @@ export class PlacementService {
       throw ApiError.notFound('Organization not found');
     }
 
+    // Resolve internId: it may be a User ID or an InternProfile ID
+    const internProfile = await prisma.internProfile.findFirst({
+      where: {
+        OR: [
+          { id: dto.internId },
+          { userId: dto.internId },
+        ],
+      },
+    });
+
+    if (!internProfile) {
+      throw ApiError.notFound('Intern profile not found. Please ensure the intern has a profile.');
+    }
+
     const existing = await this.placementRepo.findByInternAndOrganization(
-      dto.internId,
+      internProfile.id,
       dto.organizationId,
     );
     if (existing) {
@@ -34,7 +49,7 @@ export class PlacementService {
     }
 
     const placement = await this.placementRepo.create({
-      internProfile: { connect: { id: dto.internId } },
+      internProfile: { connect: { id: internProfile.id } },
       organization: { connect: { id: dto.organizationId } },
       ...(dto.supervisorId && {
         supervisor: { connect: { id: dto.supervisorId as string } },

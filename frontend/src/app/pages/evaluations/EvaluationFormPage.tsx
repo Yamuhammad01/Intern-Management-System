@@ -1,6 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+interface Intern {
+  id: string;
+  firstName: string;
+  lastName: string;
+  internProfile?: {
+    id: string;
+    userId: string;
+  } | null;
+}
+
+interface Placement {
+  id: string;
+  internId: string;
+  organizationId: string;
+  role: string | null;
+  department: string | null;
+  status: string;
+  internName: string;
+  organizationName: string;
+}
 
 export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
@@ -19,6 +40,46 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
   });
 
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [interns, setInterns] = useState<Intern[]>([]);
+  const [placements, setPlacements] = useState<Placement[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+
+        const [internsRes, placementsRes] = await Promise.all([
+          fetch(`${API_BASE}/users?role=INTERN`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE}/placements/?limit=100`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (!internsRes.ok) {
+          throw new Error("Failed to fetch interns");
+        }
+        if (!placementsRes.ok) {
+          throw new Error("Failed to fetch placements");
+        }
+
+        const internsJson = await internsRes.json();
+        const placementsJson = await placementsRes.json();
+
+        setInterns(internsJson.data || []);
+        setPlacements(placementsJson.data?.placements || []);
+      } catch (err) {
+        console.error("Error fetching options:", err);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -40,13 +101,13 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
           internId: formData.internId,
           placementId: formData.placementId,
           criteria: {
-            attendance: parseInt(formData.attendance),
-            technicalSkills: parseInt(formData.technicalSkills),
-            communication: parseInt(formData.communication),
-            teamwork: parseInt(formData.teamwork),
-            initiative: parseInt(formData.initiative),
-            problemSolving: parseInt(formData.problemSolving),
-            professionalConduct: parseInt(formData.professionalConduct),
+            attendance: parseInt(formData.attendance, 10),
+            technicalSkills: parseInt(formData.technicalSkills, 10),
+            communication: parseInt(formData.communication, 10),
+            teamwork: parseInt(formData.teamwork, 10),
+            initiative: parseInt(formData.initiative, 10),
+            problemSolving: parseInt(formData.problemSolving, 10),
+            professionalConduct: parseInt(formData.professionalConduct, 10),
           },
           strengths: formData.strengths,
           improvements: formData.improvements,
@@ -88,7 +149,7 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Intern Selection */}
+          {/* Intern and Placement Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
@@ -100,11 +161,16 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-[13px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 required
+                disabled={loadingOptions}
               >
-                <option value="">-- Select Intern --</option>
-                <option value="intern1">John Doe - Software Engineering</option>
-                <option value="intern2">Jane Smith - Product Design</option>
-                <option value="intern3">Ahmed Musa - Data Analytics</option>
+                <option value="">
+                  {loadingOptions ? "Loading interns..." : "-- Select Intern --"}
+                </option>
+                {interns.map((intern) => (
+                  <option key={intern.id} value={intern.id}>
+                    {intern.firstName} {intern.lastName}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -117,10 +183,18 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-[13px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 required
+                disabled={loadingOptions}
               >
-                <option value="">-- Select Placement --</option>
-                <option value="placement1">TechCorp Inc. - Frontend Dev</option>
-                <option value="placement2">DesignHub - UI/UX Design</option>
+                <option value="">
+                  {loadingOptions ? "Loading placements..." : "-- Select Placement --"}
+                </option>
+                {placements.map((placement) => (
+                  <option key={placement.id} value={placement.id}>
+                    {placement.organizationName}
+                    {placement.role ? ` - ${placement.role}` : ""}
+                    {placement.department ? ` (${placement.department})` : ""}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

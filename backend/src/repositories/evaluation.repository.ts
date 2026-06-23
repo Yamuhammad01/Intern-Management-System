@@ -9,7 +9,7 @@ export class EvaluationRepository {
       return await prisma.evaluation.findUnique({
         where: { id },
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           supervisor: { select: { id: true, firstName: true, lastName: true, email: true } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {
@@ -63,7 +63,7 @@ export class EvaluationRepository {
         take,
         orderBy: { createdAt: 'desc' },
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {
             include: {
@@ -78,12 +78,12 @@ export class EvaluationRepository {
     }
   }
 
-  async findByPlacementId(placementId: string): Promise<Evaluation | null> {
+   async findByPlacementId(placementId: string): Promise<Evaluation | null> {
     try {
       return await prisma.evaluation.findFirst({
         where: { placementId },
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           supervisor: { select: { id: true, firstName: true, lastName: true } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {
@@ -97,7 +97,7 @@ export class EvaluationRepository {
       logger.error('Error finding evaluation by placement ID:', error);
       throw ApiError.internal('Failed to find evaluation');
     }
-  }
+  } 
 
   async findAll(params: {
     page?: number;
@@ -129,7 +129,7 @@ export class EvaluationRepository {
           take: limit,
           orderBy: { createdAt: 'desc' },
           include: {
-            intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+            intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
             supervisor: { select: { id: true, firstName: true, lastName: true } },
             reviewer: { select: { id: true, firstName: true, lastName: true } },
             placement: {
@@ -154,7 +154,7 @@ export class EvaluationRepository {
       return await prisma.evaluation.create({
         data,
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           supervisor: { select: { id: true, firstName: true, lastName: true } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {
@@ -176,7 +176,7 @@ export class EvaluationRepository {
         where: { id },
         data,
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           supervisor: { select: { id: true, firstName: true, lastName: true } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {
@@ -201,7 +201,7 @@ export class EvaluationRepository {
           ...(reviewedBy ? { reviewedBy, reviewedAt: new Date() } : {}),
         },
         include: {
-          intern: { select: { id: true, firstName: true, lastName: true, email: true } },
+          intern: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
           supervisor: { select: { id: true, firstName: true, lastName: true } },
           reviewer: { select: { id: true, firstName: true, lastName: true } },
           placement: {

@@ -30,16 +30,39 @@ export class EvaluationService {
     return Math.round((sum / (values.length * 10)) * 100);
   }
 
+  // ─── Resolve InternProfile ID ─────────────────────────────────────────────
+  // The frontend may send a User ID instead of an InternProfile ID.
+  // This method resolves whichever is provided to the actual InternProfile ID.
+
+  private async resolveInternProfileId(internId: string): Promise<string> {
+    const profile = await prisma.internProfile.findFirst({
+      where: {
+        OR: [
+          { id: internId },
+          { userId: internId },
+        ],
+      },
+    });
+    if (!profile) {
+      throw ApiError.notFound('Intern profile not found for the given intern ID');
+    }
+    return profile.id;
+  }
+
   // ─── Create Evaluation ────────────────────────────────────────────────────
 
   async createEvaluation(supervisorId: string, dto: CreateEvaluationDTO): Promise<EvaluationResponseDTO> {
+    // Resolve intern ID (may be User ID or InternProfile ID)
+    const resolvedInternId = await this.resolveInternProfileId(dto.internId);
+
     // Verify placement exists and belongs to this supervisor
     const placement = await prisma.placement.findFirst({
       where: {
         id: dto.placementId,
         supervisorId,
-        internProfile: { userId: dto.internId },
+        internId: resolvedInternId,
       },
+      include: { internProfile: true },
     });
 
     if (!placement) {
@@ -63,9 +86,9 @@ export class EvaluationService {
     });
 
     const evaluation = await this.evaluationRepo.create({
-      intern: { connect: { id: dto.internId } },
-      supervisor: { connect: { id: supervisorId } },
-      placement: { connect: { id: dto.placementId } },
+      internId: resolvedInternId,
+      supervisorId,
+      placementId: dto.placementId,
       status: (dto.status as EvaluationStatus) || 'PENDING',
       attendance: dto.attendance,
       technicalSkills: dto.technicalSkills,
@@ -344,26 +367,24 @@ export class EvaluationService {
   // ─── Mapper ──────────────────────────────────────────────────────────────
 
   private mapToResponseDTO(evaluation: Evaluation & {
-    intern?: { id: string; firstName: string; lastName: string; email: string };
+    intern?: { id: string; user: { firstName: string; lastName: string; email: string } };
     supervisor?: { id: string; firstName: string; lastName: string };
     reviewer?: { id: string; firstName: string; lastName: string };
     placement?: {
       id: string;
       organization?: { id: string; name: string };
-      internProfile?: {
-        user?: { id: string; firstName: string; lastName: string; email: string };
-      };
+      intern?: { id: string; user: { firstName: string; lastName: string; email: string } };
     };
   }): EvaluationResponseDTO {
     return {
       id: evaluation.id,
       internId: evaluation.internId,
       internName: evaluation.intern
-        ? `${evaluation.intern.firstName} ${evaluation.intern.lastName}`
-        : evaluation.placement?.internProfile?.user
-          ? `${evaluation.placement.internProfile.user.firstName} ${evaluation.placement.internProfile.user.lastName}`
+        ? `${evaluation.intern.user.firstName} ${evaluation.intern.user.lastName}`
+        : evaluation.placement?.intern
+          ? `${evaluation.placement.intern.user.firstName} ${evaluation.placement.intern.user.lastName}`
           : 'Unknown',
-      internEmail: evaluation.intern?.email || evaluation.placement?.internProfile?.user?.email || '',
+      internEmail: evaluation.intern?.user.email || evaluation.placement?.intern?.user?.email || '',
       supervisorId: evaluation.supervisorId,
       supervisorName: evaluation.supervisor
         ? `${evaluation.supervisor.firstName} ${evaluation.supervisor.lastName}`
