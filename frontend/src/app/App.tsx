@@ -115,31 +115,34 @@ function AppContent() {
     }
   };
 
-  // Handle supervisor sub-navigation
-  const handleSupervisorNavigate = (tab: string, params?: any) => {
-    if (tab === "Dashboard") {
-      setSubScreen("supervisor-dashboard");
-      setSubParams({});
-    } else if (tab === "Supervise") {
-      setSubScreen("supervisor-interns");
-      setSubParams({});
-    } else if (tab === "Review Logs") {
-      setSubScreen("supervisor-submitted");
-      setSubParams({});
-    } else if (tab === "Log Review") {
-      setSubScreen("supervisor-review");
-      setSubParams({ logId: params?.logId, internId: params?.internId });
-    } else if (tab === "Feedback") {
-      setSubScreen("supervisor-feedback");
-      setSubParams({});
-    } else if (tab === "Intern Progress") {
-      setSubScreen("supervisor-progress");
-      setSubParams({ internId: params?.internId });
-    } else if (tab === "Evaluations") {
-      setSubScreen("evaluations-dashboard");
-      setSubParams({});
-    }
-  };
+    // Handle supervisor sub-navigation
+    const handleSupervisorNavigate = (tab: string, params?: any) => {
+      if (tab === "Dashboard") {
+        setSubScreen("supervisor-dashboard");
+        setSubParams({});
+      } else if (tab === "Supervise") {
+        setSubScreen("supervisor-interns");
+        setSubParams({});
+      } else if (tab === "Review Logs") {
+        setSubScreen("supervisor-submitted");
+        setSubParams({});
+      } else if (tab === "Log Review") {
+        setSubScreen("supervisor-review");
+        setSubParams({ logId: params?.logId, internId: params?.internId });
+      } else if (tab === "Feedback") {
+        setSubScreen("supervisor-feedback");
+        setSubParams({});
+      } else if (tab === "Intern Progress") {
+        setSubScreen("supervisor-progress");
+        setSubParams({ internId: params?.internId });
+      } else if (tab === "Evaluations") {
+        setSubScreen("evaluations-form");
+        setSubParams({});
+      } else if (tab === "New Evaluation") {
+        setSubScreen("evaluations-form");
+        setSubParams({});
+      }
+    };
 
   const handleEvaluationNavigate = (view: string, params?: any) => {
     setSubScreen(`evaluations-${view}`);
@@ -351,7 +354,7 @@ function AppContent() {
 
     if (activeTab === "Placements") {
       return (
-        <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN", "SUPERVISOR", "MENTOR"]}>
+        <ProtectedRoute allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
           <PlacementDashboard />
         </ProtectedRoute>
       );
@@ -371,20 +374,32 @@ function AppContent() {
     }
 
     // Supervisor / Mentor screens
-    if (user.role === "SUPERVISOR" || user.role === "MENTOR") {
+    if (user.role === "SUPERVISOR") {
       return (
-        <ProtectedRoute allowedRoles={["SUPERVISOR", "MENTOR", "ADMIN", "SUPER_ADMIN"]}>
+        <ProtectedRoute allowedRoles={["SUPERVISOR"]}>
           {subScreen === "supervisor-dashboard" && <SupervisorDashboardPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "supervisor-interns" && <InternListPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "supervisor-submitted" && <SubmittedLogsPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "supervisor-review" && <LogReviewPage onNavigate={handleSupervisorNavigate} logId={subParams.logId} internId={subParams.internId} />}
           {subScreen === "supervisor-feedback" && <FeedbackHistoryPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "supervisor-progress" && <InternProgressPage onNavigate={handleSupervisorNavigate} internId={subParams.internId} />}
-          {subScreen === "evaluations-dashboard" && <EvaluationDashboardPage onNavigate={handleSupervisorNavigate} />}
+
           {subScreen === "evaluations-form" && <EvaluationFormPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "evaluations-summary" && <EvaluationSummaryPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === "evaluations-report" && <EvaluationReportPage onNavigate={handleSupervisorNavigate} />}
           {subScreen === null && <SupervisorDashboardPage onNavigate={handleSupervisorNavigate} />}
+        </ProtectedRoute>
+      );
+    }
+
+    // Admin evaluation screens
+    if ((user.role === "ADMIN") && activeTab === "Evaluations") {
+      return (
+        <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+          {subScreen === "evaluations-dashboard" && <EvaluationDashboardPage onNavigate={handleEvaluationNavigate} />}
+          {subScreen === "evaluations-summary" && <EvaluationSummaryPage onNavigate={handleEvaluationNavigate} />}
+          {subScreen === "evaluations-report" && <EvaluationReportPage onNavigate={handleEvaluationNavigate} />}
+          {subScreen === null && <EvaluationDashboardPage onNavigate={handleEvaluationNavigate} />}
         </ProtectedRoute>
       );
     }
@@ -413,10 +428,21 @@ function AppContent() {
         <nav className="flex-1 px-2.5 py-3 space-y-0.5">
           {navItems.map(({ icon: Icon, label }) => {
             const isSupervisorNav = user && (user.role === "SUPERVISOR" || user.role === "MENTOR") && ["Supervise", "Review Logs", "Feedback", "Evaluations"].includes(label);
+            const isAdminEvaluationNav = user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN") && label === "Evaluations";
             return (
               <button
                 key={label}
-                onClick={() => isSupervisorNav ? handleSupervisorNavigate(label) : handleTabChange(label)}
+                onClick={() => {
+                  if (isSupervisorNav) {
+                    handleSupervisorNavigate(label);
+                  } else if (isAdminEvaluationNav) {
+                    setActiveTab("Evaluations");
+                    setSubScreen("evaluations-dashboard");
+                    setSubParams({});
+                  } else {
+                    handleTabChange(label);
+                  }
+                }}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-colors text-left ${
                   activeTab === label
                     ? "bg-[#10b981] text-white shadow-sm"

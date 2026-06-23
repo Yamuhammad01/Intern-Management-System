@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, ClipboardCheck, AlertCircle, TrendingUp } from "lucide-react";
 
-export const EvaluationSummaryPage: React.FC = () => {
+export const EvaluationSummaryPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
   // Mock data - replace with actual API call
   const summaryData = {
     totalEvaluations: 24,

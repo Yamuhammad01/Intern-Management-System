@@ -1,7 +1,7 @@
 import React from "react";
 import { Download, Printer, Share2, ArrowLeft } from "lucide-react";
 
-export const EvaluationReportPage: React.FC = () => {
+export const EvaluationReportPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
   // Mock data - replace with actual API call
   const evaluation = {
     id: "1",

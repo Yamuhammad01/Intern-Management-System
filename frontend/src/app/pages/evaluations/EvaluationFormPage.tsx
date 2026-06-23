@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
-export const EvaluationFormPage: React.FC = () => {
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
     placementId: "",
     internId: "",
@@ -26,9 +28,45 @@ export const EvaluationFormPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Implement API call
-    console.log("Submitting evaluation:", formData);
-    setLoading(false);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE}/evaluations/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          internId: formData.internId,
+          placementId: formData.placementId,
+          criteria: {
+            attendance: parseInt(formData.attendance),
+            technicalSkills: parseInt(formData.technicalSkills),
+            communication: parseInt(formData.communication),
+            teamwork: parseInt(formData.teamwork),
+            initiative: parseInt(formData.initiative),
+            problemSolving: parseInt(formData.problemSolving),
+            professionalConduct: parseInt(formData.professionalConduct),
+          },
+          strengths: formData.strengths,
+          improvements: formData.improvements,
+          comments: formData.comments,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to submit evaluation");
+      }
+      const data = await res.json();
+      if (data.success) {
+        onNavigate?.("evaluations-dashboard");
+      }
+    } catch (err: any) {
+      console.error("Submit evaluation error:", err);
+      alert(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const criteria = [

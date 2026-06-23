@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Star, Download, Eye, Search } from "lucide-react";
 
-export const EvaluationDashboardPage: React.FC = () => {
+export const EvaluationDashboardPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 

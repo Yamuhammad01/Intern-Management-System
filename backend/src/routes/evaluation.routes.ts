@@ -20,7 +20,7 @@ const evaluationController = new EvaluationController(evaluationService);
 router.post(
   '/',
   authenticate,
-  authorize('SUPERVISOR', 'MENTOR', 'ADMIN', 'SUPER_ADMIN'),
+  authorize('SUPERVISOR'),
   validate(createEvaluationSchema),
   evaluationController.createEvaluation,
 );
