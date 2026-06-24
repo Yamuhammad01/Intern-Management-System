@@ -78,7 +78,7 @@ import {
 } from "./pages/evaluations/index";
 
 // Reports
-import { ReportsPage } from "./pages/reports/ReportsPage";
+import ReportsApp from "./pages/reports/ReportsApp";
 
 // Auth Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -384,7 +384,7 @@ function AppContent() {
     if (activeTab === "Reports") {
       return (
         <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-          <ReportsPage />
+          <ReportsApp />
         </ProtectedRoute>
       );
     }
