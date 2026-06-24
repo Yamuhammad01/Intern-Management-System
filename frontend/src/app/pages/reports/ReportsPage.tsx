@@ -56,6 +56,27 @@ const TASK_COMPLETION = [
   {program:"Engineering",completed:84,pending:16},{program:"Design",completed:78,pending:22},
   {program:"Marketing",completed:71,pending:29},{program:"Research",completed:88,pending:12},
 ];
+const SKILLS_ASSESSMENT = [
+  {ini:"AC",name:"Aria Chen",id:"#INT-2031",technical:92,communication:88,problemSolving:90,leadership:85,domain:91},
+  {ini:"LT",name:"Liam Torres",id:"#INT-2032",technical:80,communication:82,problemSolving:78,leadership:70,domain:76},
+  {ini:"PN",name:"Priya Nair",id:"#INT-2033",technical:95,communication:90,problemSolving:94,leadership:88,domain:93},
+  {ini:"MW",name:"Marcus Webb",id:"#INT-2034",technical:72,communication:68,problemSolving:70,leadership:65,domain:74},
+  {ini:"SG",name:"Sophie Grant",id:"#INT-2035",technical:88,communication:90,problemSolving:86,leadership:82,domain:87},
+];
+const TASK_DETAILS = [
+  {id:"TSK-001",name:"API Integration",intern:"Aria Chen",program:"Software Eng.",assigned:"01 Jan",due:"15 Jan",status:"Completed",priority:"High",evaluation:"Pass"},
+  {id:"TSK-002",name:"Database Schema Design",intern:"Aria Chen",program:"Software Eng.",assigned:"16 Jan",due:"30 Jan",status:"Completed",priority:"High",evaluation:"Pass"},
+  {id:"TSK-003",name:"User Authentication Flow",intern:"Aria Chen",program:"Software Eng.",assigned:"01 Feb",due:"14 Feb",status:"Completed",priority:"Medium",evaluation:"Pass"},
+  {id:"TSK-004",name:"Wireframe Creation",intern:"Liam Torres",program:"Product Design",assigned:"05 Jan",due:"19 Jan",status:"Completed",priority:"High",evaluation:"Pass"},
+  {id:"TSK-005",name:"Prototype Testing",intern:"Liam Torres",program:"Product Design",assigned:"20 Jan",due:"03 Feb",status:"In Progress",priority:"Medium",evaluation:"-"},
+  {id:"TSK-006",name:"Final Design Handoff",intern:"Liam Torres",program:"Product Design",assigned:"04 Feb",due:"18 Feb",status:"Pending",priority:"High",evaluation:"-"},
+  {id:"TSK-007",name:"Data Pipeline Setup",intern:"Priya Nair",program:"Data Analytics",assigned:"10 Jan",due:"24 Jan",status:"Completed",priority:"High",evaluation:"Pass"},
+  {id:"TSK-008",name:"Dashboard Development",intern:"Priya Nair",program:"Data Analytics",assigned:"25 Jan",due:"08 Feb",status:"Completed",priority:"High",evaluation:"Excellent"},
+  {id:"TSK-009",name:"Campaign Strategy Plan",intern:"Marcus Webb",program:"Marketing",assigned:"12 Jan",due:"26 Jan",status:"Completed",priority:"High",evaluation:"Needs Improvement"},
+  {id:"TSK-010",name:"Social Media Analytics",intern:"Marcus Webb",program:"Marketing",assigned:"27 Jan",due:"10 Feb",status:"In Progress",priority:"Medium",evaluation:"-"},
+  {id:"TSK-011",name:"Competitor Research",intern:"Sophie Grant",program:"Research",assigned:"08 Jan",due:"22 Jan",status:"Completed",priority:"Medium",evaluation:"Pass"},
+  {id:"TSK-012",name:"Final Report Writing",intern:"Sophie Grant",program:"Research",assigned:"23 Jan",due:"06 Feb",status:"In Progress",priority:"High",evaluation:"-"},
+];
 const REPORT_INTERNS = [
   {name:"Aria Chen",   id:"#INT-2031",program:"Software Eng.",mentor:"David Park",attendance:96,score:91,tasks:"12/13",status:"Excellent",ini:"AC",bg:"bg-emerald-500"},
   {name:"Liam Torres", id:"#INT-2032",program:"Product Design",mentor:"Sarah Kim",  attendance:88,score:84,tasks:"9/11", status:"Good",     ini:"LT",bg:"bg-blue-500"},
@@ -666,7 +687,126 @@ function ReportPreview({
 
               <div className="h-px bg-gray-100" />
 
-              {/* Attendance + task charts */}
+              {/* Skills Assessment */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">4</div>
+                  <h2 className="text-[15px] font-bold text-[#0f2d1e]">Skills Assessment</h2>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="grid grid-cols-6 gap-2 mb-3">
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Intern</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Technical</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Communication</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Problem Solving</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Leadership</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Domain</div>
+                  </div>
+                  {SKILLS_ASSESSMENT.map((s, i) => (
+                    <div key={i} className="grid grid-cols-6 gap-2 py-2 border-t border-gray-200/60 items-center">
+                      <div className="flex items-center gap-2">
+                        <Ini s={s.ini} bg={REPORT_INTERNS[i].bg} size={5}/>
+                        <div>
+                          <p className="text-[11px] font-semibold leading-none">{s.name}</p>
+                          <p className="text-[9px] text-gray-400 mt-0.5">{s.id}</p>
+                        </div>
+                      </div>
+                      {[s.technical, s.communication, s.problemSolving, s.leadership, s.domain].map((score) => (
+                        <div key={score} className="flex flex-col items-center">
+                          <span className={`text-[11px] font-bold ${score>=90?"text-emerald-600":score>=80?"text-blue-600":"text-amber-600"}`}>{score}</span>
+                          <div className="w-full h-1 bg-gray-200 rounded-full mt-1">
+                            <div className={`h-full rounded-full ${score>=90?"bg-emerald-500":score>=80?"bg-blue-500":"bg-amber-500"}`} style={{width:`${score}%`}}/>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-5 gap-2 text-center">
+                    <div></div>
+                    {[
+                      {label:"Technical",avg:Math.round(SKILLS_ASSESSMENT.reduce((a,b)=>a+b.technical,0)/SKILLS_ASSESSMENT.length)},
+                      {label:"Communication",avg:Math.round(SKILLS_ASSESSMENT.reduce((a,b)=>a+b.communication,0)/SKILLS_ASSESSMENT.length)},
+                      {label:"Problem Solving",avg:Math.round(SKILLS_ASSESSMENT.reduce((a,b)=>a+b.problemSolving,0)/SKILLS_ASSESSMENT.length)},
+                      {label:"Leadership",avg:Math.round(SKILLS_ASSESSMENT.reduce((a,b)=>a+b.leadership,0)/SKILLS_ASSESSMENT.length)},
+                      {label:"Domain",avg:Math.round(SKILLS_ASSESSMENT.reduce((a,b)=>a+b.domain,0)/SKILLS_ASSESSMENT.length)},
+                    ].map((stat) => (
+                      <div key={stat.label}>
+                        <p className="text-[9px] text-gray-400 font-medium">{stat.label}</p>
+                        <p className="text-[12px] font-bold text-[#111827]">{stat.avg}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              <div className="h-px bg-gray-100" />
+
+              {/* Task Completion */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">5</div>
+                  <h2 className="text-[15px] font-bold text-[#0f2d1e]">Task Completion</h2>
+                </div>
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  {[
+                    {label:"Total Tasks",value:"14",delta:"Across all interns",pos:true},
+                    {label:"Completed",value:"7",delta:"50% completion rate",pos:true},
+                    {label:"In Progress",value:"3",delta:"On track",pos:true},
+                    {label:"Pending/Overdue",value:"4",delta:"2 at risk",pos:false},
+                  ].map(s => (
+                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
+                      <p className="text-[20px] font-bold text-[#111827] leading-none">{s.value}</p>
+                      <p className={`text-[10px] mt-1 font-medium ${s.pos?"text-emerald-600":"text-amber-600"}`}>{s.delta}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-100/50">
+                        {["Task ID","Task Name","Intern","Program","Assigned","Due","Status","Priority","Evaluation"].map(h=>(
+                          <th key={h} className="text-left text-[10px] text-gray-500 font-semibold pb-2 pr-3">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {TASK_DETAILS.map((t,i)=>(
+                        <tr key={i} className="border-b border-gray-100 last:border-0">
+                          <td className="py-2 pr-3 text-[10.5px] font-mono text-gray-600">{t.id}</td>
+                          <td className="py-2 pr-3 text-[11px] font-semibold text-[#111827]">{t.name}</td>
+                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.intern}</td>
+                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.program}</td>
+                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.assigned}</td>
+                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.due}</td>
+                          <td className="py-2 pr-3">
+                            <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full ${
+                              t.status==="Completed"?"bg-emerald-100 text-emerald-700":
+                              t.status==="In Progress"?"bg-blue-100 text-blue-700":
+                              t.status==="Overdue"?"bg-red-100 text-red-600":"bg-amber-100 text-amber-700"
+                            }`}>{t.status}</span>
+                          </td>
+                          <td className="py-2 pr-3">
+                            <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full ${
+                              t.priority==="High"?"bg-red-50 text-red-600":t.priority==="Medium"?"bg-amber-50 text-amber-700":"bg-gray-100 text-gray-600"
+                            }`}>{t.priority}</span>
+                          </td>
+                          <td className="py-2">
+                            <span className={`text-[9.5px] font-semibold ${
+                              t.evaluation==="Excellent"?"text-emerald-600":t.evaluation==="Pass"?"text-blue-600":
+                              t.evaluation==="Needs Improvement"?"text-amber-600":"text-gray-400"
+                            }`}>{t.evaluation}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <div className="h-px bg-gray-100" />
+
+              {/* Mentor Feedback */}
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">4</div>
@@ -709,17 +849,24 @@ function ReportPreview({
         </div>
 
         {/* Right sidebar: TOC + export panel */}
-        <div className="w-[220px] shrink-0 bg-white border-l border-gray-100 overflow-y-auto p-4 space-y-5">
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Contents</p>
-            <div className="space-y-1">
-              {["Executive Summary","Performance Trends","Intern Scorecards","Attendance & Tasks"].map((s,i)=>(
+          <div className="w-[220px] shrink-0 bg-white border-l border-gray-100 overflow-y-auto p-4 space-y-5">
+            <div>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Contents</p>
+              <div className="space-y-1">
+                {["Executive Summary","Performance Trends","Intern Scorecards","Skills Assessment","Task Completion","Mentor Feedback"].map((s,i)=>(
                 <button key={s} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 text-left transition-colors">
                   <span className="text-[10px] text-gray-400 w-4 shrink-0">{i+1}.</span>
                   <span className="text-[11.5px] text-gray-700">{s}</span>
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="h-px bg-gray-100" />
+
+          <div>
+            <p className="text-[11px] font-bold text-red-500 uppercase tracking-wider mb-2">⚠️ Under Development</p>
+            <p className="text-[10px] text-gray-400 leading-relaxed mb-3">Sections 4 & 5 (Skills Assessment & Task Completion) are new additions under final review.</p>
           </div>
 
           <div className="h-px bg-gray-100" />
@@ -746,12 +893,12 @@ function ReportPreview({
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Report Info</p>
             <div className="space-y-2">
-              {[
-                {label:"Type",value:reportType==="intern"?"Intern":reportType==="performance"?"Performance":"Organization"},
-                {label:"Period",value:"Q2 2025"},
-                {label:"Pages",value:"~4"},
-                {label:"Sections",value:"4"},
-              ].map(r=>(
+                {[
+                  {label:"Type",value:reportType==="intern"?"Intern":reportType==="performance"?"Performance":"Organization"},
+                  {label:"Period",value:"Q2 2025"},
+                  {label:"Pages",value:"~6"},
+                  {label:"Sections",value:"6"},
+                ].map(r=>(
                 <div key={r.label} className="flex justify-between">
                   <span className="text-[11px] text-gray-400">{r.label}</span>
                   <span className="text-[11px] font-medium text-gray-700">{r.value}</span>
@@ -858,7 +1005,7 @@ function ExportModal({ onClose, onDone }: { onClose:()=>void; onDone:()=>void })
             <div>
               <p className="text-[12px] font-bold text-gray-600 mb-2">Include Sections</p>
               <div className="space-y-2">
-                {["Executive Summary","Performance Trends","Intern Scorecards","Attendance & Tasks","Mentor Feedback","Recommendations"].map(s=>(
+                {["Executive Summary","Performance Trends","Intern Scorecards","Skills Assessment","Task Completion","Mentor Feedback","Recommendations"].map(s=>(
                   <label key={s} className="flex items-center gap-2.5 cursor-pointer group">
                     <div onClick={()=>toggleSection(s)}
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0 cursor-pointer
