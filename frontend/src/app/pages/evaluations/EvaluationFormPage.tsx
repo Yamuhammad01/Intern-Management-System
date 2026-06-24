@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -118,11 +119,30 @@ export const EvaluationFormPage: React.FC<{ onNavigate?: (view: string, params?:
       }
       const data = await res.json();
       if (data.success) {
+        toast.success("Evaluation Submitted Successfully");
+        setFormData({
+          placementId: "",
+          internId: "",
+          attendance: "",
+          technicalSkills: "",
+          communication: "",
+          teamwork: "",
+          initiative: "",
+          problemSolving: "",
+          professionalConduct: "",
+          strengths: "",
+          improvements: "",
+          comments: "",
+        });
         onNavigate?.("evaluations-dashboard");
       }
     } catch (err: any) {
       console.error("Submit evaluation error:", err);
-      alert(err.message || "Something went wrong");
+      if (err.message === "An evaluation already exists for this placement") {
+        toast.error(err.message);
+      } else {
+        alert(err.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }

@@ -77,6 +77,9 @@ import {
   EvaluationReportPage,
 } from "./pages/evaluations/index";
 
+// Reports
+import { ReportsPage } from "./pages/reports/ReportsPage";
+
 // Auth Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -90,6 +93,8 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+import { Toaster } from "./components/ui/sonner";
 
 function AppContent() {
   const { user, loading, logout } = useAuth();
@@ -376,6 +381,14 @@ function AppContent() {
       );
     }
 
+    if (activeTab === "Reports") {
+      return (
+        <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+          <ReportsPage />
+        </ProtectedRoute>
+      );
+    }
+
     // Logbook module
     if (activeTab === "Logbook") {
       return (
@@ -440,6 +453,7 @@ function AppContent() {
 
   return (
     <div style={{ fontFamily: "Inter, system-ui, sans-serif" }} className="flex h-screen w-full overflow-hidden bg-[#f4f6f8] text-[#111827] text-sm select-none">
+      <Toaster />
       
       {/* ── Sidebar ── */}
       <aside className="w-[200px] shrink-0 flex flex-col bg-[#0f2d1e] text-[#d1fae5] overflow-y-auto z-10 shadow-lg">
@@ -546,7 +560,7 @@ function AppContent() {
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-5 relative bg-[#f4f6f8]">
-          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook", "My Evaluations"].includes(activeTab) ? (
+          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook", "My Evaluations", "Reports"].includes(activeTab) ? (
             renderMainContent()
           ) : (
             /* Tab Placeholder view */
