@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { Star, Eye, Search, TrendingUp, Award } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Star, Eye, Search, TrendingUp, Award, Loader2 } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 interface EvaluationResult {
   id: string;
@@ -15,28 +17,39 @@ interface EvaluationStats {
   highestScore: number | null;
 }
 
-// ─── Seed / Mock Data ───────────────────────────────────────────────────────
-
-const MOCK_EVALUATIONS: EvaluationResult[] = [
-  { id: "eval-001", supervisorName: "Mr. Bello", overallScore: 85, status: "COMPLETED", createdAt: "2026-06-15T10:30:00Z" },
-  { id: "eval-002", supervisorName: "Mrs. Amina", overallScore: 72, status: "COMPLETED", createdAt: "2026-06-14T14:15:00Z" },
-  { id: "eval-003", supervisorName: "Ms. Sarah", overallScore: 91, status: "REVIEWED", createdAt: "2026-06-13T09:00:00Z" },
-  { id: "eval-004", supervisorName: "Mr. David", overallScore: 68, status: "COMPLETED", createdAt: "2026-06-10T11:45:00Z" },
-  { id: "eval-005", supervisorName: "Mrs. Grace", overallScore: 78, status: "COMPLETED", createdAt: "2026-06-08T08:30:00Z" },
-  { id: "eval-006", supervisorName: "Dr. Emmanuel", overallScore: 95, status: "REVIEWED", createdAt: "2026-06-05T16:00:00Z" },
-];
-
-const MOCK_STATS: EvaluationStats = {
-  totalEvaluations: 6,
-  averageScore: 81.5,
-  highestScore: 95,
-};
-
 export const EvaluationResultsPage: React.FC<{ onNavigate?: (view: string, params?: any) => void }> = ({ onNavigate }) => {
-  const [evaluations] = useState<EvaluationResult[]>(MOCK_EVALUATIONS);
-  const [stats] = useState<EvaluationStats>(MOCK_STATS);
+  const [evaluations, setEvaluations] = useState<EvaluationResult[]>([]);
+  const [stats, setStats] = useState<EvaluationStats>({ totalEvaluations: 0, averageScore: null, highestScore: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+
+  useEffect(() => {
+    const fetchEvaluations = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch(`${API_BASE}/intern/evaluations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || "Failed to fetch evaluations");
+        }
+        const json = await res.json();
+        const data = json.data || json;
+        setEvaluations(data.evaluations || []);
+        setStats(data.stats || { totalEvaluations: 0, averageScore: null, highestScore: null });
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvaluations();
+  }, []);
 
   const getScoreColor = (score: number | null) => {
     if (!score) return "bg-gray-100 text-gray-500";
@@ -62,6 +75,29 @@ export const EvaluationResultsPage: React.FC<{ onNavigate?: (view: string, param
       const dateB = new Date(b.createdAt).getTime();
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+          <p className="text-[12px] text-gray-500">Loading evaluations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border border-black/[0.07] p-8 shadow-sm text-center">
+        <div className="w-12 h-12 bg-red-50 border border-red-100 rounded-full flex items-center justify-center text-red-500 mx-auto mb-3">
+          <Award className="w-5 h-5" />
+        </div>
+        <p className="text-[13px] font-semibold text-red-600">Failed to Load</p>
+        <p className="text-[11px] text-gray-500 mt-1">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { ArrowLeft, Star, Award, Clock, User, Building2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Star, Award, Clock, Loader2, User, Building2 } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 interface EvaluationDetail {
   id: string;
@@ -23,167 +25,38 @@ interface EvaluationDetail {
   updatedAt: string;
 }
 
-// ─── Seed / Mock Data ───────────────────────────────────────────────────────
-
-const MOCK_DETAILS: Record<string, EvaluationDetail> = {
-  "eval-001": {
-    id: "eval-001",
-    supervisorName: "Mr. Bello",
-    placementRole: "Frontend Developer",
-    placementOrganization: "TechCorp Solutions",
-    status: "COMPLETED",
-    attendance: 9,
-    technicalSkills: 8,
-    communication: 7,
-    teamwork: 9,
-    initiative: 8,
-    problemSolving: 8,
-    professionalConduct: 9,
-    overallScore: 85,
-    strengths: "Excellent problem-solving abilities. Shows great initiative in tackling complex tasks and consistently meets deadlines. Strong team player who contributes positively to group discussions.",
-    improvements: "Could improve technical documentation skills. Consider writing more detailed comments in code and maintaining a personal knowledge base. Communication with stakeholders could be more proactive.",
-    comments: "Overall a strong performer. Has shown consistent growth throughout the internship period. I recommend focusing on deepening technical expertise in React and exploring backend technologies.",
-    reviewedAt: "2026-06-16T14:30:00Z",
-    createdAt: "2026-06-15T10:30:00Z",
-    updatedAt: "2026-06-16T14:30:00Z",
-  },
-  "eval-002": {
-    id: "eval-002",
-    supervisorName: "Mrs. Amina",
-    placementRole: "Product Designer",
-    placementOrganization: "DesignLab Studios",
-    status: "COMPLETED",
-    attendance: 7,
-    technicalSkills: 7,
-    communication: 8,
-    teamwork: 8,
-    initiative: 6,
-    problemSolving: 7,
-    professionalConduct: 7,
-    overallScore: 72,
-    strengths: "Good design sense with attention to user experience details. Communicates design decisions clearly and collaborates well with the development team.",
-    improvements: "Needs to take more initiative in proposing design improvements rather than waiting for instructions. Time management could be improved to meet sprint deadlines more consistently.",
-    comments: "Showing promise as a designer. Would benefit from more exposure to user research methodologies and design systems.",
-    reviewedAt: null,
-    createdAt: "2026-06-14T14:15:00Z",
-    updatedAt: "2026-06-14T14:15:00Z",
-  },
-  "eval-003": {
-    id: "eval-003",
-    supervisorName: "Ms. Sarah",
-    placementRole: "Data Analyst",
-    placementOrganization: "DataPulse Analytics",
-    status: "REVIEWED",
-    attendance: 10,
-    technicalSkills: 9,
-    communication: 9,
-    teamwork: 9,
-    initiative: 10,
-    problemSolving: 9,
-    professionalConduct: 9,
-    overallScore: 91,
-    strengths: "Outstanding analytical skills with exceptional attention to data accuracy. Proactively identifies trends and presents insights clearly. Highly reliable and consistently exceeds expectations.",
-    improvements: "Continue developing advanced statistical modeling skills. Consider contributing more to team knowledge sharing sessions, as your expertise is highly valuable to others.",
-    comments: "One of the top interns I've supervised. Demonstrates a professional attitude and a genuine passion for data. Highly recommended for a full-time role upon graduation.",
-    reviewedAt: "2026-06-14T11:00:00Z",
-    createdAt: "2026-06-13T09:00:00Z",
-    updatedAt: "2026-06-14T11:00:00Z",
-  },
-  "eval-004": {
-    id: "eval-004",
-    supervisorName: "Mr. David",
-    placementRole: "Backend Developer",
-    placementOrganization: "CloudBase Systems",
-    status: "COMPLETED",
-    attendance: 6,
-    technicalSkills: 7,
-    communication: 6,
-    teamwork: 7,
-    initiative: 5,
-    problemSolving: 7,
-    professionalConduct: 6,
-    overallScore: 68,
-    strengths: "Solid understanding of database design and API development. Shows willingness to learn new technologies when guided.",
-    improvements: "Needs significant improvement in punctuality and attendance. Should communicate more openly about challenges faced during development. Needs to take more ownership of assigned tasks.",
-    comments: "Has the technical foundation but needs to develop professional work habits. I recommend setting clear daily goals and improving time management skills.",
-    reviewedAt: null,
-    createdAt: "2026-06-10T11:45:00Z",
-    updatedAt: "2026-06-10T11:45:00Z",
-  },
-  "eval-005": {
-    id: "eval-005",
-    supervisorName: "Mrs. Grace",
-    placementRole: "Marketing Intern",
-    placementOrganization: "BrandWave Media",
-    status: "COMPLETED",
-    attendance: 8,
-    technicalSkills: 7,
-    communication: 9,
-    teamwork: 8,
-    initiative: 7,
-    problemSolving: 7,
-    professionalConduct: 8,
-    overallScore: 78,
-    strengths: "Excellent written and verbal communication skills. Creates engaging content and understands brand voice well. Adaptable and quick to learn new marketing tools.",
-    improvements: "Could develop stronger data analysis skills to better measure campaign performance. Recommend taking courses on marketing analytics and SEO strategy.",
-    comments: "A creative thinker with good potential in digital marketing. Would benefit from more hands-on experience with campaign management and A/B testing.",
-    reviewedAt: null,
-    createdAt: "2026-06-08T08:30:00Z",
-    updatedAt: "2026-06-08T08:30:00Z",
-  },
-  "eval-006": {
-    id: "eval-006",
-    supervisorName: "Dr. Emmanuel",
-    placementRole: "Machine Learning Intern",
-    placementOrganization: "AI Research Labs",
-    status: "REVIEWED",
-    attendance: 10,
-    technicalSkills: 10,
-    communication: 9,
-    teamwork: 9,
-    initiative: 10,
-    problemSolving: 10,
-    professionalConduct: 10,
-    overallScore: 95,
-    strengths: "Exceptional technical aptitude with deep understanding of machine learning algorithms. Independently developed a model that improved prediction accuracy by 15%. Excellent research and documentation skills.",
-    improvements: "Continue building expertise in MLOps and model deployment. Consider mentoring junior interns as a way to solidify understanding and develop leadership skills.",
-    comments: "Truly outstanding performance. The quality of work produced is comparable to that of a junior engineer. Strongly recommend for a full-time offer and potential fast-track career progression.",
-    reviewedAt: "2026-06-07T16:30:00Z",
-    createdAt: "2026-06-05T16:00:00Z",
-    updatedAt: "2026-06-07T16:30:00Z",
-  },
-};
-
-// If the evaluationId is not in mock data, use a default
-const getDefaultDetail = (id: string): EvaluationDetail => ({
-  id,
-  supervisorName: "Unknown",
-  placementRole: null,
-  placementOrganization: "N/A",
-  status: "COMPLETED",
-  attendance: null,
-  technicalSkills: null,
-  communication: null,
-  teamwork: null,
-  initiative: null,
-  problemSolving: null,
-  professionalConduct: null,
-  overallScore: null,
-  strengths: null,
-  improvements: null,
-  comments: null,
-  reviewedAt: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
-
 export const EvaluationDetailPage: React.FC<{
   evaluationId: string;
   onNavigate?: (view: string, params?: any) => void;
 }> = ({ evaluationId, onNavigate }) => {
-  const [evaluation] = useState<EvaluationDetail>(
-    MOCK_DETAILS[evaluationId] || getDefaultDetail(evaluationId)
-  );
+  const [evaluation, setEvaluation] = useState<EvaluationDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch(`${API_BASE}/intern/evaluations/${evaluationId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || "Failed to fetch evaluation details");
+        }
+        const json = await res.json();
+        const data = json.data || json;
+        setEvaluation(data);
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [evaluationId]);
 
   const getScoreColor = (score: number | null) => {
     if (!score) return "bg-gray-100 text-gray-500";
@@ -219,6 +92,29 @@ export const EvaluationDetailPage: React.FC<{
     problemSolving: "Problem Solving",
     professionalConduct: "Professional Conduct",
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+          <p className="text-[12px] text-gray-500">Loading evaluation details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !evaluation) {
+    return (
+      <div className="bg-white rounded-xl border border-black/[0.07] p-8 shadow-sm text-center">
+        <div className="w-12 h-12 bg-red-50 border border-red-100 rounded-full flex items-center justify-center text-red-500 mx-auto mb-3">
+          <Award className="w-5 h-5" />
+        </div>
+        <p className="text-[13px] font-semibold text-red-600">Failed to Load</p>
+        <p className="text-[11px] text-gray-500 mt-1">{error || "Evaluation not found"}</p>
+      </div>
+    );
+  }
 
   const criteriaEntries = Object.entries(criteriaLabels).map(([key, label]) => ({
     key,
