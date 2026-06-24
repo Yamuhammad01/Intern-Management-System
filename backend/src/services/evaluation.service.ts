@@ -89,7 +89,7 @@ export class EvaluationService {
       internId: resolvedInternId,
       supervisorId,
       placementId: dto.placementId,
-      status: (dto.status as EvaluationStatus) || 'PENDING',
+      status: (dto.status as EvaluationStatus) || 'COMPLETED',
       attendance: dto.attendance,
       technicalSkills: dto.technicalSkills,
       communication: dto.communication,
