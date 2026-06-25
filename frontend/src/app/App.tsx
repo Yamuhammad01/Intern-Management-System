@@ -253,6 +253,7 @@ function AppContent() {
           { icon: ClipboardList, label: "Review Logs" },
           { icon: MessageSquare, label: "Feedback" },
           { icon: ClipboardCheck, label: "Evaluations" },
+          { icon: BarChart2, label: "Reports" },
           { icon: Settings, label: "Settings" }
         ];
       case "ADMIN":
@@ -383,8 +384,8 @@ function AppContent() {
 
     if (activeTab === "Reports") {
       return (
-        <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-          <ReportsApp />
+        <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN", "SUPERVISOR", "MENTOR"]}>
+          <ReportsApp userRole={user.role} />
         </ProtectedRoute>
       );
     }

@@ -1,18 +1,40 @@
 import React from "react";
 import {
-  Users, TrendingUp, Building2, FileText, Download, Clock,
+  Users, Building2, FileText, Download, Clock,
   Activity, Plus, ChevronRight as ChevronR, Eye, Printer,
 } from "lucide-react";
 import { Card, Chip, RECENT_REPORTS } from "../components/reports/ReportsShared.jsx";
 
-function ReportsOverviewPage({ navigate }) {
+function ReportsOverviewPage({ navigate, userRole }) {
   const typeChipCls = (t) =>
     t === "Performance" ? "bg-purple-100 text-purple-700" :
     t === "Attendance" ? "bg-blue-100 text-blue-700" :
     t === "Intern" ? "bg-emerald-100 text-emerald-700" :
     "bg-amber-100 text-amber-700";
 
+  const isSupervisor = userRole === "SUPERVISOR" || userRole === "MENTOR";
+
   const goNew = (type) => navigate("new-report", { reportType: type });
+
+  const reportCards = isSupervisor
+    ? [
+        {
+          type: "intern", icon: Users, iconBg: "bg-emerald-500",
+          title: "Intern Report",
+          desc: "Comprehensive report of the interns assigned to you, including attendance, task completion, performance scores, and mentor feedback.",
+          includes: ["Individual scorecards", "Attendance breakdown", "Task completion rate", "Mentor feedback summary"],
+          lastRun: "28 May 2025", badge: "Assigned Interns", badgeCls: "bg-emerald-100 text-emerald-700",
+        },
+      ]
+    : [
+        {
+          type: "organization", icon: Building2, iconBg: "bg-blue-500",
+          title: "Organization Report",
+          desc: "Department-level overview of internship program health, resource utilization, and outcomes across all organizations.",
+          includes: ["Department breakdown", "Supervisor effectiveness", "Program ROI metrics", "Cohort comparison"],
+          lastRun: "20 May 2025", badge: "Executive View", badgeCls: "bg-blue-100 text-blue-700",
+        },
+      ];
 
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -21,11 +43,13 @@ function ReportsOverviewPage({ navigate }) {
         <div>
           <h1 className="text-[20px] font-bold text-[#0f2d1e]">Reports</h1>
           <p className="text-[12.5px] text-gray-500 mt-0.5">
-            Generate, preview, and export professional reports for your internship programs.
+            {isSupervisor
+              ? "View and generate reports for the interns assigned to you."
+              : "Generate, preview, and export organization-level reports for your internship programs."}
           </p>
         </div>
         <button
-          onClick={() => goNew("intern")}
+          onClick={() => goNew(reportCards[0]?.type || "intern")}
           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold rounded-xl shadow-sm transition-colors"
         >
           <Plus className="w-4 h-4" />New Report
@@ -55,33 +79,13 @@ function ReportsOverviewPage({ navigate }) {
         ))}
       </div>
 
-      {/* Report type cards → each goes to NewReportPage with pre-selected type */}
+      {/* Report type cards */}
       <div>
-        <h2 className="text-[14px] font-semibold text-[#111827] mb-3">Generate a Report</h2>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            {
-              type: "intern", icon: Users, iconBg: "bg-emerald-500",
-              title: "Intern Report",
-              desc: "Comprehensive profile of each intern including attendance, task completion, performance scores, and mentor feedback.",
-              includes: ["Individual scorecards", "Attendance breakdown", "Task completion rate", "Mentor feedback summary"],
-              lastRun: "28 May 2025", badge: "Most Used", badgeCls: "bg-emerald-100 text-emerald-700",
-            },
-            {
-              type: "performance", icon: TrendingUp, iconBg: "bg-purple-500",
-              title: "Performance Report",
-              desc: "Aggregate performance analytics across cohorts, programs, and time periods with trend analysis.",
-              includes: ["Score trends by program", "Top & at-risk interns", "Goal completion rates", "Comparative benchmarks"],
-              lastRun: "15 Jun 2025", badge: "Recently Used", badgeCls: "bg-purple-100 text-purple-700",
-            },
-            {
-              type: "organization", icon: Building2, iconBg: "bg-blue-500",
-              title: "Organization Report",
-              desc: "Department-level overview of internship program health, resource utilization, and outcomes by team.",
-              includes: ["Department breakdown", "Supervisor effectiveness", "Program ROI metrics", "Cohort comparison"],
-              lastRun: "20 May 2025", badge: "Executive View", badgeCls: "bg-blue-100 text-blue-700",
-            },
-          ].map((r) => (
+        <h2 className="text-[14px] font-semibold text-[#111827] mb-3">
+          {isSupervisor ? "Generate an Intern Report" : "Generate an Organization Report"}
+        </h2>
+        <div className="grid grid-cols-1 gap-4 max-w-lg">
+          {reportCards.map((r) => (
             <Card
               key={r.type}
               className="p-5 flex flex-col hover:shadow-md transition-shadow cursor-pointer group"

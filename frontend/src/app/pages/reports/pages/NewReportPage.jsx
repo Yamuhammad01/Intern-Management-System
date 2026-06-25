@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import {
-  ArrowLeft, Check, Users, TrendingUp, Building2,
-  Briefcase, Eye, ChevronRight as ChevronR,
+  ArrowLeft, Check, Users, Building2,
+  Briefcase, Eye,
 } from "lucide-react";
 import { Breadcrumb } from "../components/reports/ReportsShared.jsx";
 
-function NewReportPage({ navigate, initialType = "intern" }) {
-  const [reportType, setReportType] = useState(initialType);
+function NewReportPage({ navigate, userRole }) {
+  const isSupervisor = userRole === "SUPERVISOR" || userRole === "MENTOR";
+  const reportType = isSupervisor ? "intern" : "organization";
 
   const SECTIONS = {
     intern: ["Executive Summary", "Individual Scorecards", "Attendance Breakdown", "Task Completion", "Mentor Feedback", "Skills Assessment"],
-    performance: ["Executive Summary", "Performance Trends", "Program Comparison", "Top Performers", "At-Risk Interns", "Goal Achievement"],
     organization: ["Executive Summary", "Department Overview", "Supervisor Effectiveness", "Program ROI", "Cohort Comparison", "Recommendations"],
   };
 
@@ -46,32 +46,23 @@ function NewReportPage({ navigate, initialType = "intern" }) {
       </div>
 
       <div className="flex-1 overflow-hidden flex">
-        {/* ── Left: filter panel ── */}
+        {/* ── Left: report type panel ── */}
         <div className="w-[300px] shrink-0 bg-white border-r border-gray-100 overflow-y-auto p-5 space-y-6">
           {/* Report Type */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Report Type</p>
             <div className="space-y-1.5">
-              {[
-                { t: "intern", label: "Intern Report" },
-                { t: "performance", label: "Performance Report" },
-                { t: "organization", label: "Organization Report" },
-              ].map(({ t, label }) => (
-                <button
-                  key={t}
-                  onClick={() => setReportType(t)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-[12.5px] font-medium
-                    ${reportType === t ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"}`}
-                >
-                  <div className={`w-5 h-5 rounded-md flex items-center justify-center ${reportType === t ? "bg-emerald-500" : "bg-gray-200"}`}>
-                    {t === "intern" && <Users className="w-3 h-3 text-white" />}
-                    {t === "performance" && <TrendingUp className="w-3 h-3 text-white" />}
-                    {t === "organization" && <Building2 className="w-3 h-3 text-white" />}
-                  </div>
-                  {label}
-                  {reportType === t && <Check className="w-3.5 h-3.5 ml-auto text-emerald-600" />}
-                </button>
-              ))}
+              <div
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left text-[12.5px] font-medium border-emerald-500 bg-emerald-50 text-emerald-700`}
+              >
+                <div className="w-5 h-5 rounded-md flex items-center justify-center bg-emerald-500">
+                  {isSupervisor
+                    ? <Users className="w-3 h-3 text-white" />
+                    : <Building2 className="w-3 h-3 text-white" />}
+                </div>
+                {isSupervisor ? "Intern Report" : "Organization Report"}
+                <Check className="w-3.5 h-3.5 ml-auto text-emerald-600" />
+              </div>
             </div>
           </div>
         </div>
@@ -80,7 +71,7 @@ function NewReportPage({ navigate, initialType = "intern" }) {
         <div className="flex-1 bg-[#f4f6f8] overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto">
             <p className="text-[12px] text-gray-500 mb-4 font-medium">
-              Report structure preview — based on your selected report type
+              Report structure preview
             </p>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
@@ -96,7 +87,7 @@ function NewReportPage({ navigate, initialType = "intern" }) {
                   <span className="text-emerald-300 text-[10px]">CONFIDENTIAL</span>
                 </div>
                 <h2 className="text-white text-[18px] font-bold mb-1">
-                  {reportType === "intern" ? "Intern Report" : reportType === "performance" ? "Performance Report" : "Organization Report"}
+                  {isSupervisor ? "Intern Report" : "Organization Report"}
                 </h2>
               </div>
 

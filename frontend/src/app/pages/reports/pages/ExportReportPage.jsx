@@ -12,7 +12,7 @@ function ExportReportPage({ navigate, reportType = "intern" }) {
   const [exporting, setExporting] = useState(false);
   const [done, setDone] = useState(false);
   const [sections, setSections] = useState([
-    "Executive Summary", "Performance Trends", "Intern Scorecards", "Attendance & Tasks",
+    "Executive Summary", "Intern Scorecards", "Skills Assessment", "Task Completion",
   ]);
 
   const toggleSection = (s) =>
@@ -25,7 +25,7 @@ function ExportReportPage({ navigate, reportType = "intern" }) {
   };
 
   const allSections = [
-    "Executive Summary", "Performance Trends", "Intern Scorecards",
+    "Executive Summary", "Intern Scorecards",
     "Skills Assessment", "Task Completion", "Mentor Feedback", "Recommendations",
   ];
 
@@ -58,7 +58,7 @@ function ExportReportPage({ navigate, reportType = "intern" }) {
           <h2 className="text-[22px] font-bold text-[#111827] mb-2">Export Complete!</h2>
           <p className="text-[14px] text-gray-500 mb-1">Your report has been exported successfully.</p>
           <p className="text-[13px] text-emerald-600 font-semibold mb-8">
-            Q2 2025 {reportType === "intern" ? "Intern" : reportType === "performance" ? "Performance" : "Organization"} Report.{format} · 2.4 MB
+            Q2 2025 {reportType === "intern" ? "Intern" : "Organization"} Report.{format} · 2.4 MB
           </p>
           <div className="flex gap-3">
             <button
@@ -201,7 +201,7 @@ function ExportReportPage({ navigate, reportType = "intern" }) {
                   </div>
                 </div>
                 <p className="text-white text-[13px] font-semibold mb-0.5">
-                  Q2 2025 {reportType === "intern" ? "Intern" : reportType === "performance" ? "Performance" : "Organization"} Report
+                  Q2 2025 {reportType === "intern" ? "Intern" : "Organization"} Report
                 </p>
                 <p className="text-emerald-200/60 text-[10px]">Jan 1, 2025 – Jun 30, 2025</p>
               </div>

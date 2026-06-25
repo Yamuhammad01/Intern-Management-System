@@ -5,9 +5,8 @@ import { PreviewReportPage } from "./pages/PreviewReportPage.jsx";
 import { ExportReportPage } from "./pages/ExportReportPage.jsx";
 
 // ─── ROOT — Router ────────────────────────────────────────────────────────────
-// Holds the current page + any params. Passes a navigate(page, params?) fn
-// down to every page so they can push to the next step.
-export default function ReportsApp() {
+// Accepts userRole prop so pages know whether the user is a Supervisor or Admin.
+export default function ReportsApp({ userRole }) {
   const [page, setPage] = useState("overview");
   const [params, setParams] = useState({});
 
@@ -18,8 +17,8 @@ export default function ReportsApp() {
 
   return (
     <div className="flex flex-col h-screen bg-[#f8faf9] font-sans overflow-hidden">
-      {page === "overview" && <ReportsOverviewPage navigate={navigate} />}
-      {page === "new-report" && <NewReportPage navigate={navigate} initialType={params.reportType || "intern"} />}
+      {page === "overview" && <ReportsOverviewPage navigate={navigate} userRole={userRole} />}
+      {page === "new-report" && <NewReportPage navigate={navigate} userRole={userRole} />}
       {page === "preview" && <PreviewReportPage navigate={navigate} reportType={params.reportType || "intern"} />}
       {page === "export" && <ExportReportPage navigate={navigate} reportType={params.reportType || "intern"} />}
     </div>

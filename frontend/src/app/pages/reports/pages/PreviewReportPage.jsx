@@ -4,19 +4,13 @@ import {
   ChevronRight as ChevronR,
 } from "lucide-react";
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, Legend,
-} from "recharts";
-import {
-  Card, Chip, Ini, Breadcrumb, REPORT_PERF, ATTENDANCE_TREND,
-  TASK_COMPLETION, SKILLS_ASSESSMENT, TASK_DETAILS,
+  Card, Chip, Ini, Breadcrumb, SKILLS_ASSESSMENT, TASK_DETAILS,
   REPORT_INTERNS, ORG_STATS,
 } from "../components/reports/ReportsShared.jsx";
 
 function PreviewReportPage({ navigate, reportType = "intern" }) {
   const titles = {
     intern: "Intern Performance Report — Q2 2025",
-    performance: "Program Performance Analytics — Q2 2025",
     organization: "Organization Internship Overview — Q2 2025",
   };
   const statusCls = (s) =>
@@ -115,39 +109,12 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
 
               <div className="h-px bg-gray-100" />
 
-              {/* 2. Performance Trends */}
+              {/* 2. Intern / Org table */}
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">2</div>
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">
-                    {reportType === "organization" ? "Department Performance Overview" : "Performance Trends by Program"}
-                  </h2>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <ResponsiveContainer width="100%" height={180}>
-                    <LineChart data={REPORT_PERF} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[60, 100]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e5e7eb" }} />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                      <Line type="monotone" dataKey="Engineering" stroke="#16a34a" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Design" stroke="#7c3aed" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Marketing" stroke="#2563eb" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Research" stroke="#d97706" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </section>
-
-              <div className="h-px bg-gray-100" />
-
-              {/* 3. Intern / Org table */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">3</div>
-                  <h2 className="text-[15px] font-bold text-[#0f2d1e]">
-                    {reportType === "organization" ? "Department Breakdown" : reportType === "performance" ? "Top & At-Risk Interns" : "Individual Intern Scorecards"}
+                    {reportType === "organization" ? "Department Breakdown" : "Individual Intern Scorecards"}
                   </h2>
                 </div>
                 {reportType === "organization" ? (
@@ -222,10 +189,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
 
               <div className="h-px bg-gray-100" />
 
-              {/* 4. Skills Assessment */}
+              {/* 3. Skills Assessment */}
               <section>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">4</div>
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">3</div>
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Skills Assessment</h2>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -258,10 +225,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
 
               <div className="h-px bg-gray-100" />
 
-              {/* 5. Task Completion */}
+              {/* 4. Task Completion */}
               <section>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">5</div>
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">4</div>
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Task Completion</h2>
                 </div>
                 <div className="grid grid-cols-4 gap-3 mb-4">
@@ -321,41 +288,6 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                 </div>
               </section>
 
-              <div className="h-px bg-gray-100" />
-
-              {/* 6. Attendance & Tasks charts */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">6</div>
-                  <h2 className="text-[15px] font-bold text-[#0f2d1e]">Attendance & Task Completion</h2>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <p className="text-[11px] font-semibold text-gray-600 mb-3">Weekly Attendance Trend</p>
-                    <ResponsiveContainer width="100%" height={120}>
-                      <LineChart data={ATTENDANCE_TREND} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-                        <XAxis dataKey="week" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                        <YAxis domain={[80, 100]} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ fontSize: 10, borderRadius: 6 }} formatter={(v) => [`${v}%`, "Rate"]} />
-                        <Line type="monotone" dataKey="rate" stroke="#16a34a" strokeWidth={2} dot={{ r: 2, fill: "#16a34a" }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <p className="text-[11px] font-semibold text-gray-600 mb-3">Task Completion by Program</p>
-                    <ResponsiveContainer width="100%" height={120}>
-                      <BarChart data={TASK_COMPLETION} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-                        <XAxis dataKey="program" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ fontSize: 10, borderRadius: 6 }} />
-                        <Bar dataKey="completed" fill="#16a34a" radius={[3, 3, 0, 0]} stackId="a" />
-                        <Bar dataKey="pending" fill="#dcfce7" radius={[3, 3, 0, 0]} stackId="a" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </section>
-
               {/* Footer */}
               <div className="border-t border-gray-100 pt-5 flex items-center justify-between">
                 <p className="text-[10px] text-gray-400">InternHub · Confidential — For internal use only. Generated on 20 Jun 2025.</p>
@@ -370,7 +302,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Contents</p>
             <div className="space-y-1">
-              {["Executive Summary", "Performance Trends", "Intern Scorecards", "Skills Assessment", "Task Completion", "Attendance & Tasks"].map((s, i) => (
+              {["Executive Summary", "Intern Scorecards", "Skills Assessment", "Task Completion"].map((s, i) => (
                 <button key={s} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 text-left transition-colors">
                   <span className="text-[10px] text-gray-400 w-4 shrink-0">{i + 1}.</span>
                   <span className="text-[11.5px] text-gray-700">{s}</span>
@@ -407,10 +339,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Report Info</p>
             <div className="space-y-2">
               {[
-                { label: "Type", value: reportType === "intern" ? "Intern" : reportType === "performance" ? "Performance" : "Organization" },
+                { label: "Type", value: reportType === "intern" ? "Intern" : "Organization" },
                 { label: "Period", value: "Q2 2025" },
-                { label: "Pages", value: "~6" },
-                { label: "Sections", value: "6" },
+                { label: "Pages", value: "~4" },
+                { label: "Sections", value: "4" },
               ].map((r) => (
                 <div key={r.label} className="flex justify-between">
                   <span className="text-[11px] text-gray-400">{r.label}</span>
