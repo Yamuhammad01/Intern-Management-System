@@ -13,6 +13,7 @@ import {
   FeedbackListDTO,
   InternProgressDTO,
   SupervisorDashboardStatsDTO,
+  SupervisorReportSummaryDTO,
 } from '../dto/supervisor/supervisor.dto';
 
 export class SupervisorService {
@@ -359,6 +360,71 @@ export class SupervisorService {
         createdAt: log.createdAt.toISOString(),
       })),
       recentFeedback: recentFeedback.map((f) => this.mapFeedbackToDTO(f)),
+    };
+  }
+
+  // ─── Supervisor Report - Executive Summary ──────────────────────────────────
+
+  async getSupervisorReportSummary(supervisorId: string): Promise<SupervisorReportSummaryDTO> {
+    // Get assigned interns via placements
+    const placements = await prisma.placement.findMany({
+      where: { supervisorId, status: 'ACTIVE' },
+      select: { internProfile: { select: { userId: true } } },
+    });
+
+    const internUserIds = placements.map((p) => p.internProfile.userId);
+
+    if (internUserIds.length === 0) {
+      return { totalInterns: 0, averagePerformance: null, averageAttendance: 0, tasksCompleted: 0, tasksPending: 0 };
+    }
+
+    // Get evaluations for these interns (completed ones with scores)
+    const evaluations = await prisma.evaluation.findMany({
+      where: { internId: { in: internUserIds }, status: 'COMPLETED', overallScore: { not: null } },
+      select: { internId: true, overallScore: true },
+    });
+
+    // Get log stats
+    const [totalLogs, approvedLogs] = await Promise.all([
+      prisma.logEntry.count({ where: { internId: { in: internUserIds } } }),
+      prisma.logEntry.count({ where: { internId: { in: internUserIds }, status: 'APPROVED' } }),
+    ]);
+
+    // Average score from evaluations
+    const avgPerformance = evaluations.length > 0
+      ? Math.round(evaluations.reduce((sum, e) => sum + (e.overallScore || 0), 0) / evaluations.length)
+      : null;
+
+    // Average attendance from evaluations (attendance field is 1-10 scale, convert to percentage)
+    const evalsWithAttendance = evaluations.filter(e => e.overallScore !== null);
+    const avgAttendance = evalsWithAttendance.length > 0
+      ? Math.round(evaluations.reduce((sum, e) => sum + (e.overallScore || 0), 0) / evaluations.length)
+      : 0;
+
+    // For attendance, look at the actual attendance field from evaluations
+    const evalsWithAttendanceField = await prisma.evaluation.findMany({
+      where: { internId: { in: internUserIds }, attendance: { not: null } },
+      select: { attendance: true },
+    });
+    const averageAttendance = evalsWithAttendanceField.length > 0
+      ? Math.round(
+          evalsWithAttendanceField.reduce((sum, e) => sum + (e.attendance || 0), 0) /
+            evalsWithAttendanceField.length *
+          10
+        )
+      : 0;
+
+    // Tasks: approved logs = completed, pending (submitted/draft) = pending
+    const pendingLogs = await prisma.logEntry.count({
+      where: { internId: { in: internUserIds }, status: { in: ['DRAFT', 'SUBMITTED'] } },
+    });
+
+    return {
+      totalInterns: internUserIds.length,
+      averagePerformance: avgPerformance,
+      averageAttendance,
+      tasksCompleted: approvedLogs,
+      tasksPending: pendingLogs,
     };
   }
 

@@ -73,6 +73,12 @@ export class SupervisorController {
     res.status(200).json(ApiResponse.success(null, 'Feedback deleted successfully'));
   });
 
+  public getSupervisorReportSummary = asyncHandler(async (req: Request, res: Response) => {
+    const supervisorId = req.user!.userId;
+    const result = await this.supervisorService.getSupervisorReportSummary(supervisorId);
+    res.status(200).json(ApiResponse.success(result, 'Supervisor report summary retrieved successfully'));
+  });
+
   public getInternProgress = asyncHandler(async (req: Request, res: Response) => {
     const supervisorId = req.user!.userId;
     const { internId } = req.params;

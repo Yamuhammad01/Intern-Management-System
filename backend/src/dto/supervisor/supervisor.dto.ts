@@ -147,3 +147,13 @@ export interface SupervisorDashboardStatsDTO {
     approvalRate: number;
   }>;
 }
+
+// ─── Supervisor Report Summary DTO ────────────────────────────────────────────
+
+export interface SupervisorReportSummaryDTO {
+  totalInterns: number;
+  averagePerformance: number | null;
+  averageAttendance: number;
+  tasksCompleted: number;
+  tasksPending: number;
+}

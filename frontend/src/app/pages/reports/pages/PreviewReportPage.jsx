@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../../components/AuthContext";
 import {
   Briefcase, Download, Printer, SlidersHorizontal, FileDown,
-  ChevronRight as ChevronR,
+  ChevronRight as ChevronR, Award, AlertTriangle,
 } from "lucide-react";
 import {
   Card, Chip, Ini, Breadcrumb, SKILLS_ASSESSMENT, TASK_DETAILS,
   REPORT_INTERNS, ORG_STATS,
 } from "../components/reports/ReportsShared.jsx";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+
 function PreviewReportPage({ navigate, reportType = "intern" }) {
+  const { user } = useAuth();
   const titles = {
     intern: "Intern Performance Report — Q2 2025",
     organization: "Organization Internship Overview — Q2 2025",
@@ -17,6 +21,54 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
     s === "Excellent" ? "bg-emerald-100 text-emerald-700" :
     s === "Good" ? "bg-blue-100 text-blue-700" :
     "bg-red-100 text-red-600";
+
+  // ─── Fetch executive summary from API (intern report only) ──────────────
+  const [execSummary, setExecSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
+  useEffect(() => {
+    if (reportType !== "intern") return;
+
+    const fetchSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/supervisor/report/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        console.log("[PreviewReportPage] report summary response:", json);
+        if (json.success && json.data) {
+          setExecSummary(json.data);
+        } else if (json.data) {
+          setExecSummary(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load report summary", err);
+        if (res && !res.ok) {
+          console.error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+    fetchSummary();
+  }, [reportType]);
+
+  // Derive executive summary stats from API data only
+  const summaryStats = execSummary
+    ? [
+        { label: "Total Interns", value: String(execSummary.totalInterns), delta: "Assigned to you", pos: true },
+        { label: "Avg. Performance", value: execSummary.averagePerformance !== null ? String(execSummary.averagePerformance) : "N/A", delta: "Overall score", pos: true },
+        { label: "Attendance Rate", value: `${execSummary.averageAttendance}%`, delta: "Across all interns", pos: true },
+        { label: "Tasks Completed", value: String(execSummary.tasksCompleted), delta: `${execSummary.tasksPending} pending`, pos: execSummary.tasksPending <= execSummary.tasksCompleted },
+      ]
+    : [];
+
+  // Top 3 performers (sorted by score descending)
+  const topPerformers = [...REPORT_INTERNS].sort((a, b) => b.score - a.score).slice(0, 3);
+  // Bottom 3 at-risk (sorted by score ascending)
+  const atRiskInterns = [...REPORT_INTERNS].sort((a, b) => a.score - b.score).slice(0, 3);
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
@@ -84,20 +136,29 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">1</div>
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Executive Summary</h2>
                 </div>
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {[
-                    { label: "Total Interns", value: "128", delta: "+14%", pos: true },
-                    { label: "Avg. Performance", value: "87.4", delta: "+4.8pts", pos: true },
-                    { label: "Attendance Rate", value: "92%", delta: "+3%", pos: true },
-                    { label: "Tasks Completed", value: "347", delta: "48 pending", pos: false },
-                  ].map((s) => (
-                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                      <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
-                      <p className="text-[20px] font-bold text-[#111827] leading-none">{s.value}</p>
-                      <p className={`text-[10px] mt-1 font-medium ${s.pos ? "text-emerald-600" : "text-amber-600"}`}>{s.delta}</p>
+                {summaryStats.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    {summaryStats.map((s) => (
+                      <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
+                        <p className="text-[20px] font-bold text-[#111827] leading-none">{s.value}</p>
+                        <p className={`text-[10px] mt-1 font-medium ${s.pos ? "text-emerald-600" : "text-amber-600"}`}>{s.delta}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : summaryLoading ? (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                      <p className="text-[11px] text-gray-400">Loading executive summary...</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-4 bg-red-50 rounded-xl p-4 border border-red-100 text-center">
+                      <p className="text-[11px] text-red-500">Unable to load executive summary. Please check console for details.</p>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
                   <p className="text-[12px] text-[#0f2d1e] leading-relaxed font-medium">
                     The Q2 2025 internship cohort demonstrated strong performance growth across all four programs, with a 4.8-point
@@ -288,6 +349,82 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                 </div>
               </section>
 
+              {reportType === "intern" && (
+                <>
+                  <div className="h-px bg-gray-100" />
+
+                  {/* 5. Top Performers */}
+                  <section>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">5</div>
+                      <h2 className="text-[15px] font-bold text-[#0f2d1e]">Top Performers</h2>
+                    </div>
+                    <div className="space-y-3">
+                      {topPerformers.map((intern, i) => (
+                        <div key={intern.ini} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-[11px] shrink-0">
+                            #{i + 1}
+                          </div>
+                          <Ini s={intern.ini} bg={intern.bg} size={8} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
+                            <p className="text-[10px] text-gray-400">{intern.program} · {intern.id}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[16px] font-bold text-emerald-600">{intern.score}</p>
+                            <p className="text-[9px] text-emerald-500 font-medium">Score</p>
+                          </div>
+                          <div className="w-16 text-right">
+                            <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
+                            <p className="text-[9px] text-gray-400">Attend.</p>
+                          </div>
+                          <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <div className="h-px bg-gray-100" />
+
+                  {/* 6. At-Risk Interns */}
+                  <section>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">6</div>
+                      <h2 className="text-[15px] font-bold text-[#0f2d1e]">At-Risk Interns</h2>
+                    </div>
+                    <div className="space-y-3">
+                      {atRiskInterns.map((intern, i) => (
+                        <div key={intern.ini} className="flex items-center gap-4 p-4 rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50/50 to-transparent">
+                          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-[11px] shrink-0">
+                            #{i + 1}
+                          </div>
+                          <Ini s={intern.ini} bg={intern.bg} size={8} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
+                            <p className="text-[10px] text-gray-400">{intern.program} · {intern.id}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[16px] font-bold text-red-500">{intern.score}</p>
+                            <p className="text-[9px] text-red-400 font-medium">Score</p>
+                          </div>
+                          <div className="w-16 text-right">
+                            <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
+                            <p className="text-[9px] text-gray-400">Attend.</p>
+                          </div>
+                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                        </div>
+                      ))}
+                      <div className="bg-red-50 border border-red-100 rounded-xl p-3 mt-2">
+                        <p className="text-[11px] text-red-700 font-medium">
+                          <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
+                          {atRiskInterns[0]?.name} requires immediate intervention. Mentor feedback session recommended.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
+
               {/* Footer */}
               <div className="border-t border-gray-100 pt-5 flex items-center justify-between">
                 <p className="text-[10px] text-gray-400">InternHub · Confidential — For internal use only. Generated on 20 Jun 2025.</p>
@@ -302,12 +439,20 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Contents</p>
             <div className="space-y-1">
-              {["Executive Summary", "Intern Scorecards", "Skills Assessment", "Task Completion"].map((s, i) => (
-                <button key={s} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 text-left transition-colors">
-                  <span className="text-[10px] text-gray-400 w-4 shrink-0">{i + 1}.</span>
-                  <span className="text-[11.5px] text-gray-700">{s}</span>
-                </button>
-              ))}
+              {reportType === "intern"
+                ? ["Executive Summary", "Intern Scorecards", "Skills Assessment", "Task Completion", "Top Performers", "At-Risk Interns"].map((s, i) => (
+                    <button key={s} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                      <span className="text-[10px] text-gray-400 w-4 shrink-0">{i + 1}.</span>
+                      <span className="text-[11.5px] text-gray-700">{s}</span>
+                    </button>
+                  ))
+                : ["Executive Summary", "Intern Scorecards", "Skills Assessment", "Task Completion"].map((s, i) => (
+                    <button key={s} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                      <span className="text-[10px] text-gray-400 w-4 shrink-0">{i + 1}.</span>
+                      <span className="text-[11.5px] text-gray-700">{s}</span>
+                    </button>
+                  ))
+              }
             </div>
           </div>
 
@@ -341,8 +486,8 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
               {[
                 { label: "Type", value: reportType === "intern" ? "Intern" : "Organization" },
                 { label: "Period", value: "Q2 2025" },
-                { label: "Pages", value: "~4" },
-                { label: "Sections", value: "4" },
+                { label: "Pages", value: reportType === "intern" ? "~6" : "~4" },
+                { label: "Sections", value: reportType === "intern" ? "6" : "4" },
               ].map((r) => (
                 <div key={r.label} className="flex justify-between">
                   <span className="text-[11px] text-gray-400">{r.label}</span>

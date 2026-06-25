@@ -51,6 +51,14 @@ router.patch(
   supervisorController.reviewLog,
 );
 
+// Supervisor Report - Executive Summary
+router.get(
+  '/report/summary',
+  authenticate,
+  authorize('SUPERVISOR', 'MENTOR', 'ADMIN', 'SUPER_ADMIN'),
+  supervisorController.getSupervisorReportSummary,
+);
+
 // Intern progress
 router.get(
   '/interns/:internId/progress',
