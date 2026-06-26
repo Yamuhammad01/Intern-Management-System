@@ -83,6 +83,14 @@ export class EvaluationController {
     res.status(200).json(ApiResponse.success(result, 'Evaluations retrieved successfully'));
   });
 
+  // ─── Get Skills Assessment (for report preview) ──────────────────────────
+
+  public getSkillsAssessment = asyncHandler(async (req: Request, res: Response) => {
+    const supervisorId = req.user!.userId;
+    const result = await this.evaluationService.getSkillsAssessment(supervisorId);
+    res.status(200).json(ApiResponse.success(result, 'Skills assessment retrieved successfully'));
+  });
+
   // ─── Get Evaluation Summary ──────────────────────────────────────────────
 
   public getEvaluationSummary = asyncHandler(async (req: Request, res: Response) => {

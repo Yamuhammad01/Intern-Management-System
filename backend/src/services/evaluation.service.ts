@@ -289,6 +289,59 @@ export class EvaluationService {
     };
   }
 
+  // ─── Get Skills Assessment (for report preview) ─────────────────────────
+  
+  async getSkillsAssessment(supervisorId: string): Promise<any[]> {
+    // Get the most recent completed/reviewed evaluation per intern for this supervisor
+    const evaluations = await prisma.evaluation.findMany({
+      where: {
+        supervisorId,
+        status: { in: ['COMPLETED', 'REVIEWED'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        intern: {
+          include: {
+            user: {
+              select: { firstName: true, lastName: true, department: true, program: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Deduplicate by internId (keep most recent evaluation per intern)
+    const latestPerIntern = new Map<string, typeof evaluations[0]>();
+    for (const evalRecord of evaluations) {
+      if (!latestPerIntern.has(evalRecord.internId)) {
+        latestPerIntern.set(evalRecord.internId, evalRecord);
+      }
+    }
+
+    // Convert DB 1-10 scores to 0-100 by multiplying ×10
+    return Array.from(latestPerIntern.values()).map((evalRecord) => {
+      const user = evalRecord.intern?.user;
+      const firstName = user?.firstName || '';
+      const lastName = user?.lastName || '';
+      const ini = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '--';
+
+      return {
+        id: evalRecord.internId,
+        name: `${firstName} ${lastName}`.trim() || 'Unknown',
+        matricNo: evalRecord.intern?.matricNumber || evalRecord.internId,
+        program: user?.program || user?.department || 'N/A',
+        ini: ini.slice(0, 2),
+        bg: 'bg-emerald-500',
+        // Convert from DB (1-10) to percentage (0-100)
+        technicalSkills: evalRecord.technicalSkills !== null ? evalRecord.technicalSkills * 10 : 0,
+        communication: evalRecord.communication !== null ? evalRecord.communication * 10 : 0,
+        problemSolving: evalRecord.problemSolving !== null ? evalRecord.problemSolving * 10 : 0,
+        attendance: evalRecord.attendance !== null ? evalRecord.attendance * 10 : 0,
+        professionalConduct: evalRecord.professionalConduct !== null ? evalRecord.professionalConduct * 10 : 0,
+      };
+    });
+  }
+
   // ─── Get Evaluation Summary ──────────────────────────────────────────────
 
   async getEvaluationSummary(supervisorId?: string, internId?: string): Promise<EvaluationSummaryDTO> {

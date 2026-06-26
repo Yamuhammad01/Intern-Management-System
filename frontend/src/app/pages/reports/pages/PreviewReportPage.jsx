@@ -5,8 +5,8 @@ import {
   ChevronRight as ChevronR, Award, AlertTriangle, Loader2,
 } from "lucide-react";
 import {
-  Card, Chip, Ini, Breadcrumb, SKILLS_ASSESSMENT, TASK_DETAILS,
-  ORG_STATS, REPORT_INTERNS,
+  Card, Chip, Ini, Breadcrumb, TASK_DETAILS,
+  ORG_STATS,
 } from "../components/reports/ReportsShared.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
@@ -25,6 +25,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   // ─── Fetch scorecard from API (intern report only) ──────────────────────
   const [scorecards, setScorecards] = useState([]);
   const [scorecardsLoading, setScorecardsLoading] = useState(false);
+
+  // ─── Fetch skills assessment from API (intern report only) ──────────────
+  const [skillsAssessment, setSkillsAssessment] = useState([]);
+  const [skillsLoading, setSkillsLoading] = useState(false);
 
   useEffect(() => {
     if (reportType !== "intern") return;
@@ -77,6 +81,30 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
       }
     };
     fetchScorecards();
+  }, [reportType]);
+
+  useEffect(() => {
+    if (reportType !== "intern") return;
+
+    const fetchSkills = async () => {
+      setSkillsLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/evaluations/skills-assessment`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        console.log("[PreviewReportPage] skills assessment response:", json);
+        if (json.success && Array.isArray(json.data)) {
+          setSkillsAssessment(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load skills assessment", err);
+      } finally {
+        setSkillsLoading(false);
+      }
+    };
+    fetchSkills();
   }, [reportType]);
 
   // Derive executive summary stats from API data only
@@ -325,29 +353,42 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <div className="grid grid-cols-6 gap-2 mb-3">
-                    {["Intern", "Technical", "Communication", "Problem Solving", "Leadership", "Domain"].map((h) => (
+                    {["Intern", "Technical Skills", "Communication", "Problem Solving", "Attendance", "Conduct"].map((h) => (
                       <div key={h} className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center first:text-left">{h}</div>
                     ))}
                   </div>
-                  {SKILLS_ASSESSMENT.map((s, i) => (
-                    <div key={i} className="grid grid-cols-6 gap-2 py-2 border-t border-gray-200/60 items-center">
-                      <div className="flex items-center gap-2">
-                        <Ini s={s.ini} bg={REPORT_INTERNS[i].bg} size={5} />
-                        <div>
-                          <p className="text-[11px] font-semibold leading-none">{s.name}</p>
-                          <p className="text-[9px] text-gray-400 mt-0.5">{s.id}</p>
-                        </div>
+                  {skillsLoading ? (
+                    <div className="py-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                        Loading skills assessment...
                       </div>
-                      {[s.technical, s.communication, s.problemSolving, s.leadership, s.domain].map((score, j) => (
-                        <div key={j} className="flex flex-col items-center">
-                          <span className={`text-[11px] font-bold ${score >= 90 ? "text-emerald-600" : score >= 80 ? "text-blue-600" : "text-amber-600"}`}>{score}</span>
-                          <div className="w-full h-1 bg-gray-200 rounded-full mt-1">
-                            <div className={`h-full rounded-full ${score >= 90 ? "bg-emerald-500" : score >= 80 ? "bg-blue-500" : "bg-amber-500"}`} style={{ width: `${score}%` }} />
+                    </div>
+                  ) : skillsAssessment.length === 0 ? (
+                    <div className="py-4 text-center text-[12px] text-gray-500">
+                      No skills assessment data available. Complete evaluations to view skills breakdown.
+                    </div>
+                  ) : (
+                    skillsAssessment.map((s, i) => (
+                      <div key={s.id || i} className="grid grid-cols-6 gap-2 py-2 border-t border-gray-200/60 items-center">
+                        <div className="flex items-center gap-2">
+                          <Ini s={s.ini || "NA"} bg={s.bg || "bg-emerald-500"} size={5} />
+                          <div>
+                            <p className="text-[11px] font-semibold leading-none">{s.name}</p>
+                            <p className="text-[9px] text-gray-400 mt-0.5">{s.matricNo}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ))}
+                        {[s.technicalSkills, s.communication, s.problemSolving, s.attendance, s.professionalConduct].map((score, j) => (
+                          <div key={j} className="flex flex-col items-center">
+                            <span className={`text-[11px] font-bold ${score >= 90 ? "text-emerald-600" : score >= 80 ? "text-blue-600" : "text-amber-600"}`}>{score}</span>
+                            <div className="w-full h-1 bg-gray-200 rounded-full mt-1">
+                              <div className={`h-full rounded-full ${score >= 90 ? "bg-emerald-500" : score >= 80 ? "bg-blue-500" : "bg-amber-500"}`} style={{ width: `${score}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))
+                  )}
                 </div>
               </section>
 

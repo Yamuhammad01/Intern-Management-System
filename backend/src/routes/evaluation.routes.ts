@@ -34,6 +34,14 @@ router.get(
   evaluationController.getAllEvaluations,
 );
 
+// Get skills assessment (for report preview)
+router.get(
+  '/skills-assessment',
+  authenticate,
+  authorize('SUPERVISOR', 'MENTOR', 'ADMIN', 'SUPER_ADMIN'),
+  evaluationController.getSkillsAssessment,
+);
+
 // Get evaluation summary
 router.get(
   '/summary',
