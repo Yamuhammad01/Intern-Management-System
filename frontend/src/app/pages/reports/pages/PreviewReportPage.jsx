@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../components/AuthContext";
 import {
   Briefcase, Download, Printer, SlidersHorizontal, FileDown,
-  ChevronRight as ChevronR, Award, AlertTriangle,
+  ChevronRight as ChevronR, Award, AlertTriangle, Loader2,
 } from "lucide-react";
 import {
   Card, Chip, Ini, Breadcrumb, SKILLS_ASSESSMENT, TASK_DETAILS,
-  REPORT_INTERNS, ORG_STATS,
+  ORG_STATS, REPORT_INTERNS,
 } from "../components/reports/ReportsShared.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
@@ -25,6 +25,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   // ─── Fetch executive summary from API (intern report only) ──────────────
   const [execSummary, setExecSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  
+  // ─── Fetch scorecard from API (intern report only) ──────────────────────
+  const [scorecards, setScorecards] = useState([]);
+  const [scorecardsLoading, setScorecardsLoading] = useState(false);
 
   useEffect(() => {
     if (reportType !== "intern") return;
@@ -55,6 +59,30 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
     fetchSummary();
   }, [reportType]);
 
+  useEffect(() => {
+    if (reportType !== "intern") return;
+
+    const fetchScorecards = async () => {
+      setScorecardsLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/scorecards`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        console.log("[PreviewReportPage] scorecards response:", json);
+        if (json.success && Array.isArray(json.data)) {
+          setScorecards(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load scorecards", err);
+      } finally {
+        setScorecardsLoading(false);
+      }
+    };
+    fetchScorecards();
+  }, [reportType]);
+
   // Derive executive summary stats from API data only
   const summaryStats = execSummary
     ? [
@@ -65,10 +93,26 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
       ]
     : [];
 
-  // Top 3 performers (sorted by score descending)
-  const topPerformers = [...REPORT_INTERNS].sort((a, b) => b.score - a.score).slice(0, 3);
-  // Bottom 3 at-risk (sorted by score ascending)
-  const atRiskInterns = [...REPORT_INTERNS].sort((a, b) => a.score - b.score).slice(0, 3);
+  // Map scorecards to report intern format
+  const mapScorecardToReport = (s) => ({
+    name: s.name,
+    id: s.id,
+    program: s.program || "N/A",
+    mentor: "—",
+    attendance: s.attendance ?? 0,
+    score: s.score ?? 0,
+    tasks: "—",
+    status: s.status || "PENDING",
+    ini: s.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2),
+    bg: "bg-emerald-500",
+  });
+
+  const mappedScorecards = scorecards.map(mapScorecardToReport);
+  const topPerformers = [...mappedScorecards].sort((a, b) => b.score - a.score).slice(0, 3);
+  const atRiskInterns = [...mappedScorecards]
+    .filter((s) => s.scorecardStatus !== undefined ? s.scorecardStatus : true)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 3);
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
@@ -218,31 +262,48 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {REPORT_INTERNS.map((r, i) => (
-                        <tr key={i} className="border-b border-gray-100 last:border-0">
-                          <td className="py-2.5 pr-3">
-                            <div className="flex items-center gap-2">
-                              <Ini s={r.ini} bg={r.bg} size={6} />
-                              <div>
-                                <p className="text-[11.5px] font-semibold leading-none">{r.name}</p>
-                                <p className="text-[9.5px] text-gray-400 mt-0.5">{r.id}</p>
-                              </div>
+                      {scorecardsLoading ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center">
+                            <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                              <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                              Loading scorecards...
                             </div>
                           </td>
-                          <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.program}</td>
-                          <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.mentor}</td>
-                          <td className="py-2.5 pr-3">
-                            <span className={`text-[11px] font-semibold ${r.attendance >= 90 ? "text-emerald-600" : r.attendance >= 80 ? "text-amber-600" : "text-red-500"}`}>{r.attendance}%</span>
-                          </td>
-                          <td className="py-2.5 pr-3">
-                            <span className={`text-[11px] font-semibold ${r.score >= 90 ? "text-emerald-600" : r.score >= 80 ? "text-blue-600" : "text-amber-600"}`}>{r.score}</span>
-                          </td>
-                          <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.tasks}</td>
-                          <td className="py-2.5">
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusCls(r.status)}`}>{r.status}</span>
+                        </tr>
+                      ) : mappedScorecards.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-[12px] text-gray-500">
+                            No scorecards available. Complete evaluations to generate scorecards.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        mappedScorecards.map((r, i) => (
+                          <tr key={i} className="border-b border-gray-100 last:border-0">
+                            <td className="py-2.5 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Ini s={r.ini} bg={r.bg} size={6} />
+                                <div>
+                                  <p className="text-[11.5px] font-semibold leading-none">{r.name}</p>
+                                  <p className="text-[9.5px] text-gray-400 mt-0.5">{r.id}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.program}</td>
+                            <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.mentor}</td>
+                            <td className="py-2.5 pr-3">
+                              <span className={`text-[11px] font-semibold ${r.attendance >= 90 ? "text-emerald-600" : r.attendance >= 80 ? "text-amber-600" : "text-red-500"}`}>{r.attendance}%</span>
+                            </td>
+                            <td className="py-2.5 pr-3">
+                              <span className={`text-[11px] font-semibold ${r.score >= 90 ? "text-emerald-600" : r.score >= 80 ? "text-blue-600" : "text-amber-600"}`}>{r.score}</span>
+                            </td>
+                            <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.tasks}</td>
+                            <td className="py-2.5">
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusCls(r.status)}`}>{r.status}</span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 )}

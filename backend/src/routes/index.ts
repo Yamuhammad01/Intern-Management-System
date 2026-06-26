@@ -8,6 +8,7 @@ import supervisorRoutes from './supervisor.routes';
 import userRoutes from './user.routes';
 import evaluationRoutes from './evaluation.routes';
 import internEvaluationRoutes from './intern-evaluation.routes';
+import scorecardRoutes from './scorecard.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/supervisor', supervisorRoutes);
 router.use('/users', userRoutes);
 router.use('/evaluations', evaluationRoutes);
 router.use('/intern/evaluations', internEvaluationRoutes);
+router.use('/scorecards', scorecardRoutes);
 
 export default router;
