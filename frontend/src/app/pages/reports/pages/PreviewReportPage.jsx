@@ -17,15 +17,11 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
     intern: "Intern Performance Report — Q2 2025",
     organization: "Organization Internship Overview — Q2 2025",
   };
-  const statusCls = (s) =>
-    s === "Excellent" ? "bg-emerald-100 text-emerald-700" :
-    s === "Good" ? "bg-blue-100 text-blue-700" :
-    "bg-red-100 text-red-600";
 
   // ─── Fetch executive summary from API (intern report only) ──────────────
   const [execSummary, setExecSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
-  
+
   // ─── Fetch scorecard from API (intern report only) ──────────────────────
   const [scorecards, setScorecards] = useState([]);
   const [scorecardsLoading, setScorecardsLoading] = useState(false);
@@ -96,16 +92,28 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   // Map scorecards to report intern format
   const mapScorecardToReport = (s) => ({
     name: s.name,
-    id: s.id,
+    matricNo: s.matricNo || s.matric_no || s.id,
+    id: s.matricNo || s.matric_no || s.id,
     program: s.program || "N/A",
-    mentor: "—",
     attendance: s.attendance ?? 0,
     score: s.score ?? 0,
-    tasks: "—",
     status: s.status || "PENDING",
     ini: s.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2),
     bg: "bg-emerald-500",
   });
+
+  // Attendance color helper: high -> green, medium -> grey, low -> red
+  const attendanceColor = (pct) => {
+    if (pct >= 90) return "text-emerald-600";
+    if (pct >= 75) return "text-gray-500";
+    return "text-red-500";
+  };
+
+  // Status color helper: COMPLETED -> green
+  const statusCls = (s) =>
+    s === "Completed" || s === "COMPLETED" || s === "Excellent" ? "bg-emerald-100 text-emerald-700" :
+    s === "Good" ? "bg-blue-100 text-blue-700" :
+    "bg-red-100 text-red-600";
 
   const mappedScorecards = scorecards.map(mapScorecardToReport);
   const topPerformers = [...mappedScorecards].sort((a, b) => b.score - a.score).slice(0, 3);
@@ -256,7 +264,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b-2 border-gray-200">
-                        {["Intern", "Program", "Mentor", "Attendance", "Score", "Tasks", "Status"].map((h) => (
+                        {["Intern", "Program", "Attendance", "Score", "Status"].map((h) => (
                           <th key={h} className="text-left text-[10.5px] text-gray-500 font-semibold pb-2 pr-3">{h}</th>
                         ))}
                       </tr>
@@ -264,7 +272,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     <tbody>
                       {scorecardsLoading ? (
                         <tr>
-                          <td colSpan={7} className="py-8 text-center">
+                          <td colSpan={5} className="py-8 text-center">
                             <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
                               <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                               Loading scorecards...
@@ -273,7 +281,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                         </tr>
                       ) : mappedScorecards.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-8 text-center text-[12px] text-gray-500">
+                          <td colSpan={5} className="py-8 text-center text-[12px] text-gray-500">
                             No scorecards available. Complete evaluations to generate scorecards.
                           </td>
                         </tr>
@@ -285,19 +293,17 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                                 <Ini s={r.ini} bg={r.bg} size={6} />
                                 <div>
                                   <p className="text-[11.5px] font-semibold leading-none">{r.name}</p>
-                                  <p className="text-[9.5px] text-gray-400 mt-0.5">{r.id}</p>
+                                  <p className="text-[9.5px] text-gray-400 mt-0.5">{r.matricNo}</p>
                                 </div>
                               </div>
                             </td>
                             <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.program}</td>
-                            <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.mentor}</td>
                             <td className="py-2.5 pr-3">
-                              <span className={`text-[11px] font-semibold ${r.attendance >= 90 ? "text-emerald-600" : r.attendance >= 80 ? "text-amber-600" : "text-red-500"}`}>{r.attendance}%</span>
+                              <span className={`text-[11px] font-semibold ${attendanceColor(r.attendance)}`}>{r.attendance}%</span>
                             </td>
                             <td className="py-2.5 pr-3">
                               <span className={`text-[11px] font-semibold ${r.score >= 90 ? "text-emerald-600" : r.score >= 80 ? "text-blue-600" : "text-amber-600"}`}>{r.score}</span>
                             </td>
-                            <td className="py-2.5 pr-3 text-[11px] text-gray-600">{r.tasks}</td>
                             <td className="py-2.5">
                               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusCls(r.status)}`}>{r.status}</span>
                             </td>
