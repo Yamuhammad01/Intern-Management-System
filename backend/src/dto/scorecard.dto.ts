@@ -16,3 +16,15 @@ export interface ScorecardResponseDTO {
   message: string;
   data: InternScorecardDTO[];
 }
+
+export interface ScorecardRankingDTO {
+  topPerformers: InternScorecardDTO[];
+  atRiskInterns: InternScorecardDTO[];
+}
+
+export interface ScorecardRankingResponseDTO {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: ScorecardRankingDTO;
+}

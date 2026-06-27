@@ -13,4 +13,10 @@ export class ScorecardController {
     const scorecards = await this.scorecardService.getScorecard(supervisorId);
     res.status(200).json(ApiResponse.success(scorecards, 'Scorecard retrieved successfully'));
   });
+
+  public getScorecardRanking = asyncHandler(async (req: Request, res: Response) => {
+    const supervisorId = req.user!.userId;
+    const ranking = await this.scorecardService.getScorecardRanking(supervisorId);
+    res.status(200).json(ApiResponse.success(ranking, 'Scorecard ranking retrieved successfully'));
+  });
 }

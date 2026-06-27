@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../components/AuthContext";
 import {
   Briefcase, Download, Printer, SlidersHorizontal, FileDown,
-  ChevronRight as ChevronR, Award, AlertTriangle, Loader2,
+  ChevronRight as ChevronR, Award, AlertTriangle, Loader2, CheckCircle,
 } from "lucide-react";
 import {
   Card, Chip, Ini, Breadcrumb,
@@ -33,6 +33,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   // ─── Fetch task completion stats from API ───────────────────────────────
   const [taskStats, setTaskStats] = useState(null);
   const [taskStatsLoading, setTaskStatsLoading] = useState(false);
+
+  // ─── Fetch scorecard ranking (top performers & at-risk) ────────────────
+  const [ranking, setRanking] = useState(null);
+  const [rankingLoading, setRankingLoading] = useState(false);
 
   useEffect(() => {
     if (reportType !== "intern") return;
@@ -135,6 +139,30 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
     fetchTaskStats();
   }, [reportType]);
 
+  // ─── Fetch scorecard ranking ───────────────────────────────────────────
+  useEffect(() => {
+    if (reportType !== "intern") return;
+
+    const fetchRanking = async () => {
+      setRankingLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/scorecards/ranking`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          setRanking(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load scorecard ranking", err);
+      } finally {
+        setRankingLoading(false);
+      }
+    };
+    fetchRanking();
+  }, [reportType]);
+
   // Derive executive summary stats from API data only
   const summaryStats = execSummary
     ? [
@@ -172,11 +200,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
     "bg-red-100 text-red-600";
 
   const mappedScorecards = scorecards.map(mapScorecardToReport);
-  const topPerformers = [...mappedScorecards].sort((a, b) => b.score - a.score).slice(0, 3);
-  const atRiskInterns = [...mappedScorecards]
-    .filter((s) => s.scorecardStatus !== undefined ? s.scorecardStatus : true)
-    .sort((a, b) => a.score - b.score)
-    .slice(0, 3);
+  const rankingData = ranking || { topPerformers: [], atRiskInterns: [] };
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
@@ -470,29 +494,42 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                       <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">5</div>
                       <h2 className="text-[15px] font-bold text-[#0f2d1e]">Top Performers</h2>
                     </div>
-                    <div className="space-y-3">
-                      {topPerformers.map((intern, i) => (
-                        <div key={intern.ini} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-[11px] shrink-0">
-                            #{i + 1}
-                          </div>
-                          <Ini s={intern.ini} bg={intern.bg} size={8} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
-                            <p className="text-[10px] text-gray-400">{intern.program} · {intern.id}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[16px] font-bold text-emerald-600">{intern.score}</p>
-                            <p className="text-[9px] text-emerald-500 font-medium">Score</p>
-                          </div>
-                          <div className="w-16 text-right">
-                            <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
-                            <p className="text-[9px] text-gray-400">Attend.</p>
-                          </div>
-                          <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                    {rankingLoading ? (
+                      <div className="py-4 text-center">
+                        <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                          Loading rankings...
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ) : rankingData.topPerformers.length === 0 ? (
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                        <p className="text-[11px] text-gray-400">No top performer data available yet.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {rankingData.topPerformers.map((intern, i) => (
+                          <div key={intern.ini || i} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-[11px] shrink-0">
+                              #{i + 1}
+                            </div>
+                            <Ini s={intern.ini || "NA"} bg={intern.bg || "bg-emerald-500"} size={8} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
+                              <p className="text-[10px] text-gray-400">{intern.program || "N/A"} · {intern.id}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[16px] font-bold text-emerald-600">{intern.score}</p>
+                              <p className="text-[9px] text-emerald-500 font-medium">Score</p>
+                            </div>
+                            <div className="w-16 text-right">
+                              <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
+                              <p className="text-[9px] text-gray-400">Attend.</p>
+                            </div>
+                            <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </section>
 
                   <div className="h-px bg-gray-100" />
@@ -503,35 +540,51 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                       <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">6</div>
                       <h2 className="text-[15px] font-bold text-[#0f2d1e]">At-Risk Interns</h2>
                     </div>
-                    <div className="space-y-3">
-                      {atRiskInterns.map((intern, i) => (
-                        <div key={intern.ini} className="flex items-center gap-4 p-4 rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50/50 to-transparent">
-                          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-[11px] shrink-0">
-                            #{i + 1}
-                          </div>
-                          <Ini s={intern.ini} bg={intern.bg} size={8} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
-                            <p className="text-[10px] text-gray-400">{intern.program} · {intern.id}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[16px] font-bold text-red-500">{intern.score}</p>
-                            <p className="text-[9px] text-red-400 font-medium">Score</p>
-                          </div>
-                          <div className="w-16 text-right">
-                            <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
-                            <p className="text-[9px] text-gray-400">Attend.</p>
-                          </div>
-                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                    {rankingLoading ? (
+                      <div className="py-4 text-center">
+                        <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                          Loading rankings...
                         </div>
-                      ))}
-                      <div className="bg-red-50 border border-red-100 rounded-xl p-3 mt-2">
-                        <p className="text-[11px] text-red-700 font-medium">
-                          <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
-                          {atRiskInterns[0]?.name} requires immediate intervention. Mentor feedback session recommended.
+                      </div>
+                    ) : rankingData.atRiskInterns.length === 0 ? (
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
+                        <p className="text-[11px] text-emerald-700 font-medium">
+                          <CheckCircle className="w-3.5 h-3.5 inline mr-1" />
+                          No intern is at risk. All interns are performing well.
                         </p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {rankingData.atRiskInterns.map((intern, i) => (
+                          <div key={intern.ini || i} className="flex items-center gap-4 p-4 rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50/50 to-transparent">
+                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-[11px] shrink-0">
+                              #{i + 1}
+                            </div>
+                            <Ini s={intern.ini || "NA"} bg={intern.bg || "bg-emerald-500"} size={8} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-semibold text-[#111827]">{intern.name}</p>
+                              <p className="text-[10px] text-gray-400">{intern.program || "N/A"} · {intern.id}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[16px] font-bold text-red-500">{intern.score}</p>
+                              <p className="text-[9px] text-red-400 font-medium">Score</p>
+                            </div>
+                            <div className="w-16 text-right">
+                              <p className="text-[11px] font-semibold text-[#111827]">{intern.attendance}%</p>
+                              <p className="text-[9px] text-gray-400">Attend.</p>
+                            </div>
+                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                          </div>
+                        ))}
+                        <div className="bg-red-50 border border-red-100 rounded-xl p-3 mt-2">
+                          <p className="text-[11px] text-red-700 font-medium">
+                            <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
+                            {rankingData.atRiskInterns[0]?.name} requires immediate intervention. Mentor feedback session recommended.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </section>
                 </>
               )}

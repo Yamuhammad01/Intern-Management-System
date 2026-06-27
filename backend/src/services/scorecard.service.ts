@@ -4,7 +4,7 @@ import { ProfileRepository } from '../repositories/profile.repository';
 import { PlacementRepository } from '../repositories/placement.repository';
 import prisma from '../config/database';
 import { ApiError } from '../utils/ApiError';
-import { InternScorecardDTO } from '../dto/scorecard.dto';
+import { InternScorecardDTO, ScorecardRankingDTO } from '../dto/scorecard.dto';
 
 export class ScorecardService {
   constructor(
@@ -65,5 +65,23 @@ export class ScorecardService {
     }).filter((item): item is InternScorecardDTO => item !== null);
 
     return scorecards;
+  }
+
+  async getScorecardRanking(supervisorId: string): Promise<ScorecardRankingDTO> {
+    const scorecards = await this.getScorecard(supervisorId);
+
+    // Sort by score descending for top performers
+    const sortedByScoreDesc = [...scorecards].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    const topPerformers = sortedByScoreDesc.slice(0, 3);
+
+    // At-risk: scored below 30, sorted ascending (worst first)
+    const atRisk = scorecards
+      .filter(s => (s.score ?? 0) < 30)
+      .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+
+    return {
+      topPerformers,
+      atRiskInterns: atRisk,
+    };
   }
 }

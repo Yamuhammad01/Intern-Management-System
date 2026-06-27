@@ -27,4 +27,10 @@ router.get(
   scorecardController.getScorecard,
 );
 
+router.get(
+  '/ranking',
+  authorize(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPERVISOR),
+  scorecardController.getScorecardRanking,
+);
+
 export default router;
