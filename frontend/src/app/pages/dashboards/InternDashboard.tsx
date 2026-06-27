@@ -1,31 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ClipboardList, Calendar, CheckCircle2, AlertCircle, 
-  ArrowUpRight, Star, Clock, FileText, Send, UserCheck
+  ArrowUpRight, Star, Clock, FileText, Send, UserCheck, Loader2
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+
+const API_BASE = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/tasks`
+  : "http://localhost:3000/api/v1/tasks";
 
 interface InternDashboardProps {
   user: any;
 }
 
+interface TaskStats {
+  total: number;
+  completed: number;
+  inProgress: number;
+  pendingOverdue: number;
+}
+
 export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Refactor Authentication UI using Figma guidelines", status: "Pending", deadline: "24 Jun 2026", category: "Design & UX", grade: null },
-    { id: 2, title: "Write API Integration tests for JWT verification", status: "Submitted", deadline: "18 Jun 2026", category: "Engineering", grade: "Pending Review" },
-    { id: 3, title: "Create PostgreSQL Prisma Schema migrations", status: "Completed", deadline: "15 Jun 2026", category: "Database", grade: "4.8/5" },
-    { id: 4, title: "Participate in Weekly Sync & Design Review", status: "Completed", deadline: "12 Jun 2026", category: "Engagement", grade: "5.0/5" },
-  ]);
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [feedback, setFeedback] = useState([
     { id: 1, supervisor: "Jamie Liu", text: "Excellent work on the Prisma migration. The schema structure is clean and correctly mapped out.", date: "16 Jun 2026", rating: 4.8 },
     { id: 2, supervisor: "Jamie Liu", text: "Active participation in the design session. Keep pushing details on animations.", date: "13 Jun 2026", rating: 5.0 },
     { id: 3, supervisor: "Jamie Liu", text: "Integration tests have good coverage, but please verify edge cases for expired tokens.", date: "10 Jun 2026", rating: 4.2 }
   ]);
-
-  const [newSubmissionTitle, setNewSubmissionTitle] = useState("");
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [targetTaskId, setTargetTaskId] = useState<number | null>(null);
 
   // Performance score history for the intern
   const perfData = [
@@ -37,26 +40,26 @@ export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
     { week: "W6", score: 95 },
   ];
 
-  const handleOpenSubmit = (taskId: number) => {
-    setTargetTaskId(taskId);
-    setShowSubmitModal(true);
-  };
-
-  const handleSubmitDeliverable = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubmissionTitle.trim() || targetTaskId === null) return;
-
-    setTasks(prev => prev.map(t => {
-      if (t.id === targetTaskId) {
-        return { ...t, status: "Submitted", grade: "Pending Review" };
+  useEffect(() => {
+    const fetchTaskStats = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch(`${API_BASE}/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) setTaskStats(data.data);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch task stats, using fallback");
+        setTaskStats({ total: 0, completed: 0, inProgress: 0, pendingOverdue: 0 });
+      } finally {
+        setLoading(false);
       }
-      return t;
-    }));
-    
-    setNewSubmissionTitle("");
-    setShowSubmitModal(false);
-    setTargetTaskId(null);
-  };
+    };
+    fetchTaskStats();
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -64,7 +67,15 @@ export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "My Attendance Rate", value: "96.4%", sub: "1 Late check-in this month", change: "+1.2%", pos: true, icon: UserCheck, color: "text-emerald-600 bg-emerald-50" },
-          { label: "Tasks Completed", value: `${tasks.filter(t => t.status === "Completed").length} / ${tasks.length}`, sub: "1 Task pending action", change: "+25%", pos: true, icon: ClipboardList, color: "text-blue-600 bg-blue-50" },
+          { 
+            label: "Tasks Completed", 
+            value: loading ? "-" : taskStats ? `${taskStats.completed} / ${taskStats.total}` : "0 / 0", 
+            sub: loading ? "Loading..." : taskStats ? `${taskStats.inProgress} in progress, ${taskStats.pendingOverdue} pending` : "No tasks yet", 
+            change: loading ? "" : `${taskStats?.completed || 0} done`, 
+            pos: true, 
+            icon: ClipboardList, 
+            color: "text-blue-600 bg-blue-50" 
+          },
           { label: "Average Evaluation", value: "4.7 / 5.0", sub: "Based on 3 supervisor ratings", change: "+0.3", pos: true, icon: Star, color: "text-amber-500 bg-amber-50" },
           { label: "Hours Logged", value: "128 Hrs", sub: "Required: 160 Hrs this term", change: "+40h", pos: true, icon: Clock, color: "text-indigo-600 bg-indigo-50" },
         ].map((c, i) => (
@@ -86,45 +97,35 @@ export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
         ))}
       </div>
 
-      {/* Row 2: Tasks and Line Chart */}
+      {/* Row 2: Task Stats Breakdown and Performance Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Deliverables List */}
-        <div className="lg:col-span-7 bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-2">
-              <h3 className="text-[13px] font-semibold text-gray-800">My Assigned Tasks</h3>
-              <span className="text-[10.5px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Cohort A</span>
+        {/* Task Stats Breakdown */}
+        <div className="lg:col-span-7 bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-2">
+            <h3 className="text-[13px] font-semibold text-gray-800">Task Completion Status</h3>
+            <span className="text-[10.5px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Logbook Entry Status</span>
+          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
             </div>
-            <div className="divide-y divide-gray-50 max-h-[295px] overflow-y-auto pr-1">
-              {tasks.map(t => (
-                <div key={t.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-gray-800 leading-tight">{t.title}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                      <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">{t.category}</span>
-                      <span>Due: {t.deadline}</span>
-                      {t.grade && <span className="font-semibold text-emerald-700 bg-emerald-50 px-1 rounded">Grade: {t.grade}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      t.status === "Completed" ? "bg-emerald-100 text-emerald-700" :
-                      t.status === "Submitted" ? "bg-blue-100 text-blue-700" :
-                      "bg-amber-100 text-amber-700"
-                    }`}>{t.status}</span>
-                    {t.status === "Pending" && (
-                      <button
-                        onClick={() => handleOpenSubmit(t.id)}
-                        className="bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1"
-                      >
-                        <Send className="w-2.5 h-2.5" /> Submit
-                      </button>
-                    )}
-                  </div>
+          ) : taskStats ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Total Tasks", value: taskStats.total, color: "bg-gray-100 text-gray-700", border: "border-gray-200" },
+                { label: "Completed", value: taskStats.completed, color: "bg-emerald-50 text-emerald-700", border: "border-emerald-200" },
+                { label: "In Progress", value: taskStats.inProgress, color: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+                { label: "Pending / Overdue", value: taskStats.pendingOverdue, color: "bg-amber-50 text-amber-700", border: "border-amber-200" },
+              ].map((s, i) => (
+                <div key={i} className={`${s.color} ${s.border} rounded-xl p-4 border flex flex-col gap-1`}>
+                  <span className="text-[11px] font-medium opacity-80">{s.label}</span>
+                  <span className="text-2xl font-bold">{s.value}</span>
                 </div>
               ))}
             </div>
-          </div>
+          ) : (
+            <p className="text-xs text-gray-400 text-center py-8">Unable to load task stats</p>
+          )}
         </div>
 
         {/* My Performance Curve */}
@@ -197,69 +198,6 @@ export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
           </div>
         </div>
       </div>
-
-      {/* Modal for Deliverable Submission */}
-      {showSubmitModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-black/[0.07] animate-scale-up">
-            <div className="flex items-center gap-2 mb-3.5">
-              <FileText className="w-5 h-5 text-emerald-500" />
-              <h3 className="text-[14.5px] font-bold text-gray-800">Submit Deliverable</h3>
-            </div>
-            
-            <p className="text-xs text-gray-500 mb-4">
-              Enter the deliverable details or paste the repository/Figma file link below.
-            </p>
-
-            <form onSubmit={handleSubmitDeliverable} className="space-y-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-gray-600" htmlFor="link">
-                  Deliverable Link / Notes
-                </label>
-                <textarea
-                  id="link"
-                  rows={3}
-                  value={newSubmissionTitle}
-                  onChange={(e) => setNewSubmissionTitle(e.target.value)}
-                  placeholder="e.g. github.com/username/project or Figma board URL..."
-                  className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200 resize-none"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSubmitModal(false);
-                    setTargetTaskId(null);
-                  }}
-                  className="px-4 py-2 hover:bg-gray-100 rounded-lg text-gray-600 font-semibold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors shadow-sm flex items-center gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" /> Submit Task
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes scaleUp {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-scale-up {
-          animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}</style>
-
     </div>
   );
 };

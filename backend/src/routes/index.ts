@@ -9,6 +9,7 @@ import userRoutes from './user.routes';
 import evaluationRoutes from './evaluation.routes';
 import internEvaluationRoutes from './intern-evaluation.routes';
 import scorecardRoutes from './scorecard.routes';
+import taskRoutes from './task.routes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/users', userRoutes);
 router.use('/evaluations', evaluationRoutes);
 router.use('/intern/evaluations', internEvaluationRoutes);
 router.use('/scorecards', scorecardRoutes);
+router.use('/tasks', taskRoutes);
 
 export default router;

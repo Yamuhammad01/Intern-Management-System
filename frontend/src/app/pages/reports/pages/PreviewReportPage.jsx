@@ -5,7 +5,7 @@ import {
   ChevronRight as ChevronR, Award, AlertTriangle, Loader2,
 } from "lucide-react";
 import {
-  Card, Chip, Ini, Breadcrumb, TASK_DETAILS,
+  Card, Chip, Ini, Breadcrumb,
   ORG_STATS,
 } from "../components/reports/ReportsShared.jsx";
 
@@ -29,6 +29,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   // ─── Fetch skills assessment from API (intern report only) ──────────────
   const [skillsAssessment, setSkillsAssessment] = useState([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
+
+  // ─── Fetch task completion stats from API ───────────────────────────────
+  const [taskStats, setTaskStats] = useState(null);
+  const [taskStatsLoading, setTaskStatsLoading] = useState(false);
 
   useEffect(() => {
     if (reportType !== "intern") return;
@@ -105,6 +109,30 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
       }
     };
     fetchSkills();
+  }, [reportType]);
+
+  // ─── Fetch task completion stats ────────────────────────────────────────
+  useEffect(() => {
+    if (reportType !== "intern") return;
+
+    const fetchTaskStats = async () => {
+      setTaskStatsLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/tasks/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          setTaskStats(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to load task stats", err);
+      } finally {
+        setTaskStatsLoading(false);
+      }
+    };
+    fetchTaskStats();
   }, [reportType]);
 
   // Derive executive summary stats from API data only
@@ -400,61 +428,36 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-[9px] text-white font-bold">4</div>
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Task Completion</h2>
                 </div>
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {[
-                    { label: "Total Tasks", value: "14", delta: "Across all interns", pos: true },
-                    { label: "Completed", value: "7", delta: "50% completion rate", pos: true },
-                    { label: "In Progress", value: "3", delta: "On track", pos: true },
-                    { label: "Pending/Overdue", value: "4", delta: "2 at risk", pos: false },
-                  ].map((s) => (
-                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                      <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
-                      <p className="text-[20px] font-bold text-[#111827] leading-none">{s.value}</p>
-                      <p className={`text-[10px] mt-1 font-medium ${s.pos ? "text-emerald-600" : "text-amber-600"}`}>{s.delta}</p>
+                {taskStatsLoading ? (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                      <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                        Loading task stats...
+                      </div>
                     </div>
-                  ))}
-                </div>
-                <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200 bg-gray-100/50">
-                        {["Task ID", "Task Name", "Intern", "Program", "Assigned", "Due", "Status", "Priority", "Evaluation"].map((h) => (
-                          <th key={h} className="text-left text-[10px] text-gray-500 font-semibold pb-2 pr-3 pt-2 pl-2">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {TASK_DETAILS.map((t, i) => (
-                        <tr key={i} className="border-b border-gray-100 last:border-0">
-                          <td className="py-2 pr-3 pl-2 text-[10.5px] font-mono text-gray-600">{t.id}</td>
-                          <td className="py-2 pr-3 text-[11px] font-semibold text-[#111827]">{t.name}</td>
-                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.intern}</td>
-                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.program}</td>
-                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.assigned}</td>
-                          <td className="py-2 pr-3 text-[10.5px] text-gray-600">{t.due}</td>
-                          <td className="py-2 pr-3">
-                            <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full ${
-                              t.status === "Completed" ? "bg-emerald-100 text-emerald-700" :
-                              t.status === "In Progress" ? "bg-blue-100 text-blue-700" :
-                              t.status === "Overdue" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-700"
-                            }`}>{t.status}</span>
-                          </td>
-                          <td className="py-2 pr-3">
-                            <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full ${
-                              t.priority === "High" ? "bg-red-50 text-red-600" : t.priority === "Medium" ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-600"
-                            }`}>{t.priority}</span>
-                          </td>
-                          <td className="py-2 pr-2">
-                            <span className={`text-[9.5px] font-semibold ${
-                              t.evaluation === "Excellent" ? "text-emerald-600" : t.evaluation === "Pass" ? "text-blue-600" :
-                              t.evaluation === "Needs Improvement" ? "text-amber-600" : "text-gray-400"
-                            }`}>{t.evaluation}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                  </div>
+                ) : taskStats ? (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    {[
+                      { label: "Total Tasks", value: String(taskStats.total), color: "text-gray-700", pos: true },
+                      { label: "Completed", value: String(taskStats.completed), color: "text-emerald-600", pos: true },
+                      { label: "In Progress", value: String(taskStats.inProgress), color: "text-blue-600", pos: true },
+                      { label: "Pending/Overdue", value: String(taskStats.pendingOverdue), color: "text-amber-600", pos: false },
+                    ].map((s) => (
+                      <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
+                        <p className={`text-[20px] font-bold text-[#111827] leading-none ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                      <p className="text-[11px] text-gray-400">Unable to load task completion data.</p>
+                    </div>
+                  </div>
+                )}
               </section>
 
               {reportType === "intern" && (
