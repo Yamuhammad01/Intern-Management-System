@@ -91,7 +91,7 @@ export function SubmittedLogsPage({ onNavigate }: SubmittedLogsPageProps) {
           <div className="w-10 h-10 mx-auto rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mb-3">
             <CheckCircle2 className="w-5 h-5" />
           </div>
-          <p className="text-sm font-semibold text-gray-800">All caught up!</p>
+          <p className="text-sm font-semibold text-gray-800">No log availabe</p>
           <p className="text-[11px] text-gray-500 mt-1">No pending submissions from your interns.</p>
         </div>
       ) : (

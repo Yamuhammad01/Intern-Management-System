@@ -3,6 +3,7 @@ import { ReportsOverviewPage } from "./pages/ReportsOverviewPage.jsx";
 import { NewReportPage } from "./pages/NewReportPage.jsx";
 import { PreviewReportPage } from "./pages/PreviewReportPage.jsx";
 import { ExportReportPage } from "./pages/ExportReportPage.jsx";
+import { ReportViewPage } from "./pages/ReportViewPage.jsx";
 
 // ─── ROOT — Router ────────────────────────────────────────────────────────────
 // Accepts userRole prop so pages know whether the user is a Supervisor or Admin.
@@ -21,6 +22,7 @@ export default function ReportsApp({ userRole }) {
       {page === "new-report" && <NewReportPage navigate={navigate} userRole={userRole} />}
       {page === "preview" && <PreviewReportPage navigate={navigate} reportType={params.reportType || "intern"} />}
       {page === "export" && <ExportReportPage navigate={navigate} reportType={params.reportType || "intern"} />}
+      {page === "report-view" && <ReportViewPage navigate={navigate} reportType={params.reportType || "intern"} />}
     </div>
   );
 }

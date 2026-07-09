@@ -240,8 +240,8 @@ function AppContent() {
           { icon: LayoutDashboard, label: "Dashboard" },
           { icon: ClipboardList, label: "Logbook" },
           { icon: UserCircle, label: "Intern Profile" },
-          { icon: CalendarCheck, label: "My Attendance" },
-          { icon: Star, label: "Mentor Feedback" },
+        //  { icon: CalendarCheck, label: "My Attendance" },
+        //  { icon: Star, label: "Mentor Feedback" },
           { icon: TrendingUp, label: "My Evaluations" },
           { icon: Settings, label: "Settings" }
         ];
@@ -261,17 +261,17 @@ function AppContent() {
       default:
         return [
           { icon: LayoutDashboard, label: "Dashboard" },
-          { icon: Users, label: "Interns" },
-          { icon: CalendarCheck, label: "Attendance" },
-          { icon: ClipboardList, label: "Tasks & Deliverables" },
-          { icon: TrendingUp, label: "Performance Tracking" },
-          { icon: MessageSquare, label: "Mentor Feedback" },
-          { icon: BookOpen, label: "Learning Milestones" },
+         // { icon: Users, label: "Interns" },
+          //{ icon: CalendarCheck, label: "Attendance" },
+          // { icon: ClipboardList, label: "Tasks & Deliverables" },
+          //{ icon: TrendingUp, label: "Performance Tracking" },
+          //{ icon: MessageSquare, label: "Mentor Feedback" },
+          //{ icon: BookOpen, label: "Learning Milestones" },
           { icon: BarChart2, label: "Reports" },
-          { icon: Briefcase, label: "Internship Programs" },
+          //{ icon: Briefcase, label: "Internship Programs" },
           { icon: Building2, label: "Organizations" },
           { icon: MapPin, label: "Placements" },
-          { icon: ClipboardCheck, label: "Evaluations" },
+          //{ icon: ClipboardCheck, label: "Evaluations" },
           { icon: Settings, label: "Settings" }
         ];
     }

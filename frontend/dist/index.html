@@ -10,8 +10,122 @@
       <meta name="robots" content="noindex, nofollow" />
       <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
       
-      <script type="module" crossorigin src="/assets/index-yVf9WFlO.js"></script>
-      <link rel="stylesheet" crossorigin href="/assets/index-DPLB6FsQ.css">
+      <!-- Print styles for PDF export -->
+      <style media="print">
+        @page {
+          size: A4;
+          margin: 2cm;
+        }
+        
+        body {
+          background: white !important;
+        }
+        
+        /* Hide navigation, buttons, and non-print elements */
+        nav, header, .no-print, button, .sticky, [class*="sticky"] {
+          display: none !important;
+        }
+        
+        body.report-view-mode > div > div > div {
+          display: none !important;
+        }
+        
+        body.report-view-mode > div > div > div:last-child {
+          display: block !important;
+        }
+        
+        /* Show only the report content when body has report-view-mode */
+        main {
+          overflow: visible !important;
+          height: auto !important;
+        }
+        
+        /* Ensure proper typography for print */
+        .max-w-4xl, .max-w-2xl {
+          max-width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        /* Ensure cards print properly */
+        .rounded-xl, .rounded-lg {
+          border: 1px solid #e5e7eb !important;
+          box-shadow: none !important;
+          break-inside: avoid;
+        }
+        
+        /* Page breaks */
+        .mb-6, .mb-8, .space-y-6 > div {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+        
+        /* Text colors */
+        .text-gray-500, .text-gray-400, .text-gray-600 {
+          color: #666 !important;
+        }
+        
+        /* Background colors */
+        .bg-\[\#0f2d1e\] {
+          background-color: #0f2d1e !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        .bg-emerald-50 {
+          background-color: #ecfdf5 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        .bg-emerald-600 {
+          background-color: #059669 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        .text-emerald-600, .text-emerald-500 {
+          color: #059669 !important;
+        }
+        
+        .text-emerald-300 {
+          color: #6ee7b7 !important;
+        }
+        
+        .text-emerald-200 {
+          color: #a7f3d0 !important;
+        }
+        
+        .text-white {
+          color: white !important;
+        }
+        
+        .border-emerald-500 {
+          border-color: #059669 !important;
+        }
+        
+        .border-gray-200, .border-gray-300 {
+          border-color: #d1d5db !important;
+        }
+        
+        .border-gray-100 {
+          border-color: #f3f4f6 !important;
+        }
+        
+        /* Font sizes remain but ensure readability */
+        body {
+          font-size: 11pt;
+          line-height: 1.6;
+        }
+        
+        /* Remove shadows for print */
+        .shadow-md {
+          box-shadow: none !important;
+        }
+      </style>
+      
+      <script type="module" crossorigin src="/assets/index--On3DTdE.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-DTcIOkPT.css">
     </head>
 
     <body>
