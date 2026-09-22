@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ChevronLeft, ChevronRight, MoreHorizontal, ArrowUpRight, 
   Star, ChevronDown, CheckCircle, XCircle, ShieldAlert,
@@ -6,21 +6,282 @@ import {
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+
 interface AdminDashboardProps {
   user: any;
   activities: any[];
   onAddActivity: (activity: any) => void;
 }
 
+/** Aggregate figures rendered on the administrator dashboard. */
+interface AdminKpis {
+  totalInterns: number;
+  totalOrganizations: number;
+  activeOrganizations: number;
+  totalPlacements: number;
+  activePlacements: number;
+  pendingPlacements: number;
+  completedPlacements: number;
+  tasksTotal: number;
+  tasksCompleted: number;
+  tasksPending: number;
+  attendanceRate: number;
+  performanceScore: number;
+}
+
+/** One row of the intern roster table. */
+interface RosterRow {
+  name: string;
+  ref: string;
+  role: string;
+  organization: string;
+  start: string;
+  end: string;
+  status: string;
+  ini: string;
+  bg: string;
+}
+
+interface PerfPoint {
+  month: string;
+  score: number;
+}
+
+interface ProgramSlice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+// Demo values used only when the API is unreachable (mirrors the Nigerian seed).
+const FALLBACK_KPIS: AdminKpis = {
+  totalInterns: 8,
+  totalOrganizations: 8,
+  activeOrganizations: 6,
+  totalPlacements: 8,
+  activePlacements: 5,
+  pendingPlacements: 1,
+  completedPlacements: 1,
+  tasksTotal: 37,
+  tasksCompleted: 24,
+  tasksPending: 2,
+  attendanceRate: 88,
+  performanceScore: 77,
+};
+
+const FALLBACK_ROSTER: RosterRow[] = [
+  { name: "Adaeze Nwosu", ref: "#INT-200401045", role: "Backend Engineering Intern", organization: "Flutterwave Technology Solutions Ltd", start: "18 Jun 2026", end: "15 Dec 2026", status: "ACTIVE", ini: "AN", bg: "bg-emerald-500" },
+  { name: "Oluwaseun Adeyemi", ref: "#INT-210203118", role: "Software Engineering Intern", organization: "Andela Nigeria", start: "26 Jun 2026", end: "23 Dec 2026", status: "ACTIVE", ini: "OA", bg: "bg-blue-500" },
+  { name: "Tunde Balogun", ref: "#INT-190702233", role: "Mechanical Engineering Intern", organization: "Seplat Energy Plc", start: "10 Jun 2026", end: "07 Dec 2026", status: "ACTIVE", ini: "TB", bg: "bg-violet-500" },
+  { name: "Chiamaka Obi", ref: "#INT-200803091", role: "Internal Audit Intern", organization: "Zenith Bank Plc", start: "14 Jul 2026", end: "10 Jan 2027", status: "ACTIVE", ini: "CO", bg: "bg-amber-500" },
+  { name: "Ibrahim Musa", ref: "#INT-200105477", role: "Spectrum Management Intern", organization: "Nigerian Communications Commission (NCC)", start: "24 Jul 2026", end: "20 Jan 2027", status: "ACTIVE", ini: "IM", bg: "bg-pink-500" },
+  { name: "Fatima Bello", ref: "#INT-190305862", role: "Corporate Affairs Intern", organization: "Nigerian Breweries Plc", start: "31 Mar 2026", end: "02 Sep 2026", status: "COMPLETED", ini: "FB", bg: "bg-teal-500" },
+  { name: "Emeka Okafor", ref: "#INT-200604719", role: "QA Engineering Intern", organization: "Interswitch Group", start: "25 May 2026", end: "21 Nov 2026", status: "ON_HOLD", ini: "EO", bg: "bg-slate-500" },
+  { name: "Zainab Yusuf", ref: "#INT-210409255", role: "Retail Banking Intern", organization: "Wema Bank Plc", start: "04 Oct 2026", end: "01 Feb 2027", status: "PENDING", ini: "ZY", bg: "bg-indigo-500" },
+];
+
+const FALLBACK_PERF: PerfPoint[] = [
+  { month: "Apr", score: 74 },
+  { month: "May", score: 76 },
+  { month: "Jun", score: 79 },
+  { month: "Jul", score: 81 },
+  { month: "Aug", score: 84 },
+  { month: "Sep", score: 87 },
+];
+
+const FALLBACK_PROGRAMS: ProgramSlice[] = [
+  { name: "Software Eng", value: 2, color: "#16a34a" },
+  { name: "Engineering Ops", value: 2, color: "#4ade80" },
+  { name: "Finance & Audit", value: 2, color: "#86efac" },
+  { name: "Telecom & Networks", value: 1, color: "#bbf7d0" },
+];
+
+const AVATAR_COLORS = ["bg-emerald-500", "bg-blue-500", "bg-violet-500", "bg-amber-500", "bg-pink-500", "bg-teal-500", "bg-indigo-500", "bg-slate-500"];
+
+const initialsOf = (name: string): string =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+
+const fmtDate = (value: string | null): string => {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities, onAddActivity }) => {
-  // --- Data ---
-  const PERF_DATA = [
-    { month: "Jan", score: 70 },
-    { month: "Feb", score: 73 },
-    { month: "Mar", score: 71 },
-    { month: "Apr", score: 77 },
-    { month: "May", score: 83 },
-    { month: "Jun", score: 87 },
+
+  // ── Live cohort data (falls back to the seeded demo snapshot offline) ──────
+  const [kpis, setKpis] = useState<AdminKpis>(FALLBACK_KPIS);
+  const [roster, setRoster] = useState<RosterRow[]>(FALLBACK_ROSTER);
+  const [perfData, setPerfData] = useState<PerfPoint[]>(FALLBACK_PERF);
+  const [programs, setPrograms] = useState<ProgramSlice[]>(FALLBACK_PROGRAMS);
+  const [apiLive, setApiLive] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const load = async () => {
+      try {
+        const [internsRes, tasksRes, evalSummaryRes, evalListRes, orgRes, placeRes] = await Promise.all([
+          fetch(`${API_BASE}/users?role=INTERN`, { headers }),
+          fetch(`${API_BASE}/tasks/stats`, { headers }),
+          fetch(`${API_BASE}/evaluations/summary`, { headers }),
+          fetch(`${API_BASE}/evaluations?page=1&limit=100`, { headers }),
+          fetch(`${API_BASE}/organizations?limit=100`, { headers }),
+          fetch(`${API_BASE}/placements?page=1&limit=100`, { headers }),
+        ]);
+
+        if (![internsRes, tasksRes, evalSummaryRes, evalListRes, orgRes, placeRes].every((r) => r.ok)) {
+          throw new Error("One or more admin endpoints rejected the request");
+        }
+
+        const [internsJson, tasksJson, evalSummaryJson, evalListJson, orgJson, placeJson] = await Promise.all([
+          internsRes.json(),
+          tasksRes.json(),
+          evalSummaryRes.json(),
+          evalListRes.json(),
+          orgRes.json(),
+          placeRes.json(),
+        ]);
+
+        const interns: any[] = internsJson.data || [];
+        const tasks = tasksJson.data || {};
+        const evalSummary = evalSummaryJson.data || {};
+        const evaluations: any[] = evalListJson.data?.evaluations || [];
+        const organizations: any[] = orgJson.data?.organizations || [];
+        const placements: any[] = placeJson.data?.placements || [];
+
+        // Placement status tallies
+        const countByStatus = (status: string) => placements.filter((p) => p.status === status).length;
+        const activePlacements = countByStatus("ACTIVE");
+
+        // Attendance is stored 1-10 on the evaluation, displayed as a percentage
+        const withAttendance = evaluations.filter((e) => typeof e.attendance === "number");
+        const attendanceRate = withAttendance.length
+          ? Math.round((withAttendance.reduce((sum, e) => sum + e.attendance, 0) / withAttendance.length) * 10)
+          : FALLBACK_KPIS.attendanceRate;
+
+        setKpis({
+          totalInterns: interns.length,
+          totalOrganizations: organizations.length,
+          activeOrganizations:
+            new Set(placements.filter((p) => p.status === "ACTIVE").map((p) => p.organizationId)).size ||
+            FALLBACK_KPIS.activeOrganizations,
+          totalPlacements: placements.length,
+          activePlacements,
+          pendingPlacements: countByStatus("PENDING"),
+          completedPlacements: countByStatus("COMPLETED"),
+          tasksTotal: tasks.total ?? FALLBACK_KPIS.tasksTotal,
+          tasksCompleted: tasks.completed ?? FALLBACK_KPIS.tasksCompleted,
+          tasksPending: tasks.pendingOverdue ?? FALLBACK_KPIS.tasksPending,
+          attendanceRate,
+          performanceScore:
+            typeof evalSummary.averageScore === "number" ? evalSummary.averageScore : FALLBACK_KPIS.performanceScore,
+        });
+
+        // Intern roster built from placements (matric number comes from the profile)
+        const profileById = new Map<string, any>();
+        interns.forEach((i) => {
+          if (i.internProfile) profileById.set(i.internProfile.id, i.internProfile);
+        });
+
+        if (placements.length) {
+          setRoster(
+            placements.map((p, index) => ({
+              name: p.internName,
+              ref: `#INT-${profileById.get(p.internId)?.matricNumber || "—"}`,
+              role: p.role || "Intern",
+              organization: p.organizationName,
+              start: fmtDate(p.startDate),
+              end: fmtDate(p.endDate),
+              status: p.status,
+              ini: initialsOf(p.internName) || "IN",
+              bg: AVATAR_COLORS[index % AVATAR_COLORS.length],
+            }))
+          );
+        }
+
+        // Monthly average performance trend from evaluation records
+        const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const buckets = new Map<number, number[]>();
+        evaluations.forEach((e) => {
+          if (typeof e.overallScore !== "number" || !e.createdAt) return;
+          const d = new Date(e.createdAt);
+          const key = d.getFullYear() * 12 + d.getMonth();
+          buckets.set(key, [...(buckets.get(key) || []), e.overallScore]);
+        });
+        if (buckets.size >= 2) {
+          setPerfData(
+            [...buckets.entries()]
+              .sort((a, b) => a[0] - b[0])
+              .slice(-6)
+              .map(([key, scores]) => ({
+                month: MONTHS[key % 12],
+                score: Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length),
+              }))
+          );
+        }
+
+        // Programme mix from the interns' departments
+        const deptCounts = new Map<string, number>();
+        interns.forEach((i) => {
+          const dept = i.department || "Unassigned";
+          deptCounts.set(dept, (deptCounts.get(dept) || 0) + 1);
+        });
+        if (deptCounts.size) {
+          setPrograms(
+            [...deptCounts.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 4)
+              .map(([name, value], index) => ({
+                name,
+                value,
+                color: FALLBACK_PROGRAMS[index % FALLBACK_PROGRAMS.length].color,
+              }))
+          );
+        }
+
+        setApiLive(true);
+      } catch (err) {
+        console.warn("Admin dashboard: falling back to the seeded demo snapshot.", err);
+      }
+    };
+
+    load();
+  }, []);
+
+  const statCards = [
+    {
+      label: "Total Interns",
+      value: String(kpis.totalInterns),
+      sub: `${kpis.activePlacements} on active placement · ${kpis.pendingPlacements} awaiting onboarding`,
+      change: `${kpis.totalPlacements} placements`,
+    },
+    {
+      label: "Attendance Rate",
+      value: `${kpis.attendanceRate}%`,
+      sub: "Weighted from supervisor evaluation attendance scores",
+      change: apiLive ? "live" : "demo",
+    },
+    {
+      label: "Tasks Completed",
+      value: String(kpis.tasksCompleted),
+      sub: `${kpis.tasksPending} deliverables still pending review`,
+      change: `${kpis.tasksTotal} total logged`,
+    },
+    {
+      label: "Performance Score",
+      value: `${kpis.performanceScore}`,
+      sub: "Average evaluation score across all interns",
+      change: apiLive ? "live" : "demo",
+    },
   ];
 
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
@@ -43,11 +304,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
     v === 3 ? "bg-emerald-400" : "bg-emerald-600";
 
   const CAL_WEEKS = [
-    [null,null,null, 1, 2, 3, 4],
-    [5,   6,   7,   8, 9,10,11],
-    [12, 13,  14,  15,16,17,18],
-    [19, 20,  21,  22,23,24,25],
-    [26, 27,  28,  29,30,null,null],
+    [null, null, 1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10, 11, 12],
+    [13, 14, 15, 16, 17, 18, 19],
+    [20, 21, 22, 23, 24, 25, 26],
+    [27, 28, 29, 30, null, null, null],
   ];
   
   const CAL_EVENTS: Record<number, { type: string; color: string }> = {
@@ -68,9 +329,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
   ];
 
   const EVENTS = [
-    { tag: "Mentor Session", tagCls: "bg-emerald-100 text-emerald-700", title: "Weekly 1:1 — Aria Chen & David Park", room: "Virtual Meet · 10:00 AM", avatars: ["AC","DP"] },
-    { tag: "Mid-Term Evaluation", tagCls: "bg-amber-100 text-amber-700", title: "Performance Review — Design Cohort", room: "Evaluation Review Soon · 02:00 PM", avatars: ["LT","SG","PN"], highlight: true },
-    { tag: "Program Meeting", tagCls: "bg-blue-100 text-blue-700", title: "Q3 Internship Kick-off Planning", room: "Conference Room A · 04:00 PM", avatars: ["MW","AC"] },
+    { tag: "Mentor Session", tagCls: "bg-emerald-100 text-emerald-700", title: "Weekly 1:1 — Adaeze Nwosu & Dr. Ngozi Eze", room: "Virtual Meet · 10:00 AM", avatars: ["AN","NE"] },
+    { tag: "Mid-Term Evaluation", tagCls: "bg-amber-100 text-amber-700", title: "Performance Review — Engineering Cohort", room: "Evaluation Review Soon · 02:00 PM", avatars: ["AN","OA","TB"], highlight: true },
+    { tag: "Program Meeting", tagCls: "bg-blue-100 text-blue-700", title: "Q3 SIWES Placement Kick-off Planning", room: "Conference Room A · 04:00 PM", avatars: ["MA","NE"] },
   ];
 
   const SATISFACTION = [
@@ -81,23 +342,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
   ];
 
   const TASKS = [
-    { text: "Complete pre-session survey for leadership track", tag: "Skills Development", tagCls: "bg-blue-50 text-blue-600", date: "14 Jun 2026" },
-    { text: "Join Remote Work Compliance Briefing", tag: "Workplace Engagement", tagCls: "bg-emerald-50 text-emerald-600", date: "14 Jun 2026" },
-    { text: "Prepare Q2 evaluation planning materials", tag: "Talent Acquisition", tagCls: "bg-amber-50 text-amber-600", date: "15 Jun 2026" },
+    { text: "Complete pre-session survey for the leadership track", tag: "Skills Development", tagCls: "bg-blue-50 text-blue-600", date: "18 Sep 2026" },
+    { text: "Join the hybrid work compliance briefing", tag: "Workplace Engagement", tagCls: "bg-emerald-50 text-emerald-600", date: "19 Sep 2026" },
+    { text: "Prepare Q3 evaluation planning materials", tag: "Talent Acquisition", tagCls: "bg-amber-50 text-amber-600", date: "24 Sep 2026" },
   ];
 
-  const [interns, setInterns] = useState([
-    { name: "Aria Chen", id: "#INT-2031", program: "Software Engineering", date: "16 Jun 2026", cin: "09:15 AM", cout: "06:00 PM", status: "On Time", ini: "AC", bg: "bg-emerald-500" },
-    { name: "Liam Torres", id: "#INT-2032", program: "Product Design", date: "16 Jun 2026", cin: "09:45 AM", cout: "05:30 PM", status: "Late", ini: "LT", bg: "bg-blue-500" },
-    { name: "Priya Nair", id: "#INT-2033", program: "Data Analytics", date: "16 Jun 2026", cin: "09:00 AM", cout: "06:00 PM", status: "On Time", ini: "PN", bg: "bg-violet-500" },
-    { name: "Marcus Webb", id: "#INT-2034", program: "Marketing & Outreach", date: "16 Jun 2026", cin: "—", cout: "—", status: "On Leave", ini: "MW", bg: "bg-amber-500" },
-    { name: "Sophie Grant", id: "#INT-2035", program: "Academic Research", date: "16 Jun 2026", cin: "09:10 AM", cout: "05:45 PM", status: "On Time", ini: "SG", bg: "bg-pink-500" },
-  ]);
-
-  // Demo Registration Approvals for Administrator Real RBAC Demonstration
+  // Demo registration queue awaiting administrator verification (no backend
+  // endpoint yet — mirrors the accounts created during onboarding).
   const [registrations, setRegistrations] = useState([
-    { email: "sule.sani@student.edu", name: "Suleiman Sani", role: "INTERN", entity: "Data Analytics", date: "Just now" },
-    { email: "john.moses@faculty.edu", name: "John Moses", role: "SUPERVISOR", entity: "Product & UX Design", date: "10m ago" }
+    { email: "suleiman.sani@student.unilag.edu.ng", name: "Suleiman Sani", role: "INTERN", entity: "Data Analytics", date: "Just now" },
+    { email: "chinedu.okeke@faculty.abu.edu.ng", name: "Chinedu Okeke", role: "SUPERVISOR", entity: "Product & UX Design", date: "10m ago" }
   ]);
 
   const handleApproveRegistration = (email: string, action: "Approve" | "Reject") => {
@@ -110,7 +364,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
     onAddActivity({
       ini: "SA",
       bg: "bg-[#0f2d1e]",
-      name: "Admin: Sarah J.",
+      name: `Admin: ${(user?.firstName || "Admin").charAt(0)}. ${user?.lastName || ""}`.trim(),
       text: `${action.toLowerCase()}d user registration for ${target.name} (${target.role})`,
       time: "Just now"
     });
@@ -120,12 +374,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
     <div className="space-y-4">
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Interns",     value: "128",   sub: "Active interns across all programs",  change: "+14% from last cohort" },
-          { label: "Attendance Rate",   value: "92%",   sub: "On-time check-ins this month: 91%",   change: "+3% vs prior month" },
-          { label: "Tasks Completed",   value: "347",   sub: "48 deliverables still pending",       change: "+22 this week" },
-          { label: "Performance Score", value: "87.4",  sub: "Average score across all interns",    change: "+4.8 pts vs last month" },
-        ].map((c, i) => (
+        {statCards.map((c, i) => (
           <div key={i} className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-gray-500 font-medium">{c.label}</span>
@@ -165,15 +414,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Total</p>
-              <p className="text-sm font-bold text-gray-800">24</p>
+              <p className="text-sm font-bold text-gray-800">{kpis.totalOrganizations}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Active</p>
-              <p className="text-sm font-bold text-emerald-600">21</p>
+              <p className="text-sm font-bold text-emerald-600">{kpis.activeOrganizations}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Placements</p>
-              <p className="text-sm font-bold text-gray-800">86</p>
+              <p className="text-sm font-bold text-gray-800">{kpis.totalPlacements}</p>
             </div>
           </div>
         </div>
@@ -199,15 +448,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Active</p>
-              <p className="text-sm font-bold text-emerald-600">72</p>
+              <p className="text-sm font-bold text-emerald-600">{kpis.activePlacements}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Pending</p>
-              <p className="text-sm font-bold text-amber-600">8</p>
+              <p className="text-sm font-bold text-amber-600">{kpis.pendingPlacements}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
               <p className="text-[10px] text-gray-500">Completed</p>
-              <p className="text-sm font-bold text-blue-600">6</p>
+              <p className="text-sm font-bold text-blue-600">{kpis.completedPlacements}</p>
             </div>
           </div>
         </div>
@@ -261,7 +510,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
             <h3 className="text-[13px] font-semibold text-gray-800">Intern Activity Calendar</h3>
             <div className="flex items-center gap-0.5">
               <button className="p-1 rounded hover:bg-gray-100"><ChevronLeft className="w-3.5 h-3.5 text-gray-400" /></button>
-              <span className="text-[11px] font-medium px-1">June 2026</span>
+              <span className="text-[11px] font-medium px-1">September 2026</span>
               <button className="p-1 rounded hover:bg-gray-100"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></button>
             </div>
           </div>
@@ -278,7 +527,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
                   <div key={di} className="flex flex-col items-center py-0.5">
                     {day ? (
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-medium cursor-pointer transition-colors
-                        ${day === 20 ? "bg-emerald-600 text-white" : "hover:bg-gray-100"}`}>
+                        ${day === 22 ? "bg-emerald-600 text-white" : "hover:bg-gray-100"}`}>
                         {day}
                       </div>
                     ) : <div className="w-6 h-6" />}
@@ -361,7 +610,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
           </div>
           <div className="flex-1 min-h-[100px] mt-2">
             <ResponsiveContainer width="100%" height={110}>
-              <LineChart data={PERF_DATA} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+              <LineChart data={perfData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
                 <XAxis dataKey="month" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
                 <YAxis domain={[60,100]} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, padding: "4px 8px" }} />
@@ -441,11 +690,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
             <div className="flex items-center gap-3">
               <PieChart width={80} height={80}>
                 <Pie data={PROGRAMS} cx={36} cy={36} innerRadius={22} outerRadius={37} dataKey="value" strokeWidth={0}>
-                  {PROGRAMS.map((p, i) => <Cell key={i} fill={p.color} />)}
+                  {programs.map((p, i) => <Cell key={i} fill={p.color} />)}
                 </Pie>
               </PieChart>
               <div className="flex-1 space-y-1.5">
-                {PROGRAMS.map(p => (
+                {programs.map(p => (
                   <div key={p.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
@@ -483,8 +732,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
         <div className="lg:col-span-9 bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-5">
-              <h3 className="text-[13px] font-semibold text-gray-800">Intern Attendance</h3>
-              {[["82","On Time"],["11","Late"],["6","On Leave"],["3","Absent"]].map(([n,l]) => (
+              <h3 className="text-[13px] font-semibold text-gray-800">Intern Placements</h3>
+              {[
+                [String(kpis.activePlacements), "Active"],
+                [String(kpis.pendingPlacements), "Pending"],
+                [String(kpis.completedPlacements), "Completed"],
+                [String(kpis.totalOrganizations), "Organizations"],
+              ].map(([n, l]) => (
                 <span key={l} className="text-[12px]"><b>{n}</b> <span className="text-gray-400 font-normal text-[11px]">{l}</span></span>
               ))}
             </div>
@@ -494,13 +748,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-100">
-                  {["Name","Program","Date","Check In","Check Out","Status"].map(h => (
+                  {["Name", "Role", "Organization", "Start", "End", "Status"].map(h => (
                     <th key={h} className="text-left text-[10.5px] text-gray-400 font-medium pb-2 pr-3 first:pl-0">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {interns.map((r, i) => (
+                {roster.map((r, i) => (
                   <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
                     <td className="py-2.5 pr-3">
                       <div className="flex items-center gap-2">
@@ -509,20 +763,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
                         </span>
                         <div>
                           <p className="text-[12px] font-semibold leading-none">{r.name}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">{r.id}</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">{r.ref}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-700">{r.program}</td>
-                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.date}</td>
-                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.cin}</td>
-                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.cout}</td>
+                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-700">{r.role}</td>
+                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.organization}</td>
+                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.start}</td>
+                    <td className="py-2.5 pr-3 text-[11.5px] text-gray-600">{r.end}</td>
                     <td className="py-2.5">
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        r.status === "On Time" ? "bg-emerald-100 text-emerald-700" :
-                        r.status === "Late"    ? "bg-red-100 text-red-600" :
+                        r.status === "ACTIVE"    ? "bg-emerald-100 text-emerald-700" :
+                        r.status === "COMPLETED" ? "bg-blue-100 text-blue-700" :
+                        r.status === "PENDING"   ? "bg-amber-100 text-amber-700" :
+                        r.status === "ON_HOLD"   ? "bg-purple-100 text-purple-700" :
                         "bg-gray-100 text-gray-500"
-                      }`}>{r.status}</span>
+                      }`}>{r.status.replace(/_/g, " ")}</span>
                     </td>
                   </tr>
                 ))}

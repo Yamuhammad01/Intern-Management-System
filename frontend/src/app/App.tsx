@@ -178,9 +178,10 @@ function AppContent() {
   
   // Custom activities state for real-time supervisor updates
   const [activities, setActivities] = useState([
-    { ini: "AC", bg: "bg-emerald-500", name: "Aria Chen", text: "submitted the UI wireframes deliverable", time: "16 Jun 2026 · 10:40 AM" },
-    { ini: "DP", bg: "bg-blue-600", name: "Mentor: D. Park", text: "left performance feedback for Liam Torres", time: "16 Jun 2026 · 09:30 AM" },
-    { ini: "SY", bg: "bg-gray-400", name: "System", text: "Evaluation reminder sent to all supervisors for Q2", time: "15 Jun 2026 · 08:00 AM" },
+    { ini: "AN", bg: "bg-emerald-500", name: "Adaeze Nwosu", text: "submitted the NIP reconciliation log entry for approval", time: "21 Sep 2026 · 09:30 AM" },
+    { ini: "NE", bg: "bg-blue-600", name: "Supervisor: Dr. N. Eze", text: "left performance feedback for Adaeze Nwosu", time: "18 Sep 2026 · 11:00 AM" },
+    { ini: "MA", bg: "bg-violet-500", name: "Admin: M. Abdullahi", text: "confirmed the Wema Bank placement record for Zainab Yusuf", time: "17 Sep 2026 · 04:15 PM" },
+    { ini: "SY", bg: "bg-gray-400", name: "System", text: "Evaluation reminder sent to all supervisors for Q3", time: "16 Sep 2026 · 08:00 AM" },
   ]);
 
   const handleAddActivity = (newAct: any) => {

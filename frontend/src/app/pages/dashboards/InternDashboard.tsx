@@ -25,19 +25,19 @@ export const InternDashboard: React.FC<InternDashboardProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   const [feedback, setFeedback] = useState([
-    { id: 1, supervisor: "Jamie Liu", text: "Excellent work on the Prisma migration. The schema structure is clean and correctly mapped out.", date: "16 Jun 2026", rating: 4.8 },
-    { id: 2, supervisor: "Jamie Liu", text: "Active participation in the design session. Keep pushing details on animations.", date: "13 Jun 2026", rating: 5.0 },
-    { id: 3, supervisor: "Jamie Liu", text: "Integration tests have good coverage, but please verify edge cases for expired tokens.", date: "10 Jun 2026", rating: 4.2 }
+    { id: 1, supervisor: "Dr. Ngozi Eze", text: "Outstanding quarter so far. The settlement query optimisation work on the payments ledger was well executed and clearly documented.", date: "18 Sep 2026", rating: 5.0 },
+    { id: 2, supervisor: "Dr. Ngozi Eze", text: "Strong progress with Prisma and database indexing. Your N+1 fix removed the fastest-growing request path from the slow query log.", date: "11 Sep 2026", rating: 4.6 },
+    { id: 3, supervisor: "Dr. Ngozi Eze", text: "Punctual and professional throughout the attachment. You represented the university well at the CBN open banking workshop.", date: "13 Sep 2026", rating: 4.8 }
   ]);
 
   // Performance score history for the intern
   const perfData = [
-    { week: "W1", score: 80 },
-    { week: "W2", score: 82 },
-    { week: "W3", score: 85 },
-    { week: "W4", score: 88 },
-    { week: "W5", score: 92 },
-    { week: "W6", score: 95 },
+    { week: "W1", score: 78 },
+    { week: "W2", score: 81 },
+    { week: "W3", score: 84 },
+    { week: "W4", score: 86 },
+    { week: "W5", score: 90 },
+    { week: "W6", score: 93 },
   ];
 
   useEffect(() => {

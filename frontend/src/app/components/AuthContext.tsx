@@ -39,29 +39,29 @@ const DEFAULT_MOCK_USERS: User[] = [
   {
     id: "mock-intern-1",
     email: "intern@internhub.com",
-    firstName: "Aria",
-    lastName: "Chen",
+    firstName: "Adaeze",
+    lastName: "Nwosu",
     role: "INTERN",
-    phone: "+1234567890",
-    program: "Software Engineering"
+    phone: "+234 802 314 7788",
+    program: "B.Sc. Computer Science"
   },
   {
     id: "mock-supervisor-1",
     email: "supervisor@internhub.com",
-    firstName: "Jamie",
-    lastName: "Liu",
+    firstName: "Ngozi",
+    lastName: "Eze",
     role: "SUPERVISOR",
-    phone: "+1987654321",
-    department: "Engineering"
+    phone: "+234 806 552 1184",
+    department: "Industrial Training & Placement Unit"
   },
   {
     id: "mock-admin-1",
     email: "admin@internhub.com",
-    firstName: "Sarah",
-    lastName: "Jenkins",
+    firstName: "Musa",
+    lastName: "Abdullahi",
     role: "ADMIN",
-    phone: "+1555555555",
-    department: "Administration"
+    phone: "+234 803 411 7290",
+    department: "ICT & Administration"
   }
 ];
 

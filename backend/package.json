@@ -11,7 +11,8 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:push": "npx prisma db push",
-    "prisma:seed": "npx ts-node prisma/seed.ts",
+    "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
+    "prisma:seed:reset": "ts-node --transpile-only prisma/seed.ts --reset",
     "test": "echo \"No tests configured yet\""
   },
   "author": "",
