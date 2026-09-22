@@ -113,7 +113,7 @@ const EditForm: React.FC<EditFormProps> = ({
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
@@ -129,36 +129,42 @@ const EditForm: React.FC<EditFormProps> = ({
     }
   };
 
+  // All fields are read-only EXCEPT the phone number, which remains editable.
   const fields = [
     {
       key: "fullName",
       label: "Full Name",
       icon: User,
       placeholder: "Enter your full name",
+      editable: false,
     },
     {
       key: "matricNumber",
       label: "Matric Number",
       icon: Hash,
       placeholder: "e.g. CSC/2021/001",
+      editable: false,
     },
     {
       key: "department",
       label: "Department",
       icon: BookOpen,
       placeholder: "e.g. Computer Science",
+      editable: false,
     },
     {
       key: "faculty",
       label: "Faculty",
       icon: Building2,
       placeholder: "e.g. Faculty of Computing",
+      editable: false,
     },
     {
       key: "institution",
       label: "Institution",
       icon: GraduationCap,
       placeholder: "e.g. University of Technology",
+      editable: false,
     },
     {
       key: "phone",
@@ -166,24 +172,27 @@ const EditForm: React.FC<EditFormProps> = ({
       icon: Phone,
       placeholder: "+234 800 000 0000",
       type: "tel",
+      editable: true,
     },
     {
       key: "organizationName",
       label: "Organization",
       icon: Briefcase,
       placeholder: "Internship organization name",
+      editable: false,
     },
     {
       key: "supervisorName",
       label: "Supervisor Name",
       icon: User,
       placeholder: "Your assigned supervisor",
+      editable: false,
     },
   ];
 
   const dateFields = [
-    { key: "startDate", label: "Internship Start Date" },
-    { key: "endDate", label: "Internship End Date" },
+    { key: "startDate", label: "Internship Start Date", editable: false },
+    { key: "endDate", label: "Internship End Date", editable: false },
   ];
 
   return (
@@ -198,7 +207,7 @@ const EditForm: React.FC<EditFormProps> = ({
 
       {/* Personal & College Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
-        {fields.map(({ key, label, icon: Icon, placeholder, type }) => (
+        {fields.map(({ key, label, icon: Icon, placeholder, type, editable }) => (
           <div key={key} className="flex flex-col gap-1">
             <label
               htmlFor={`edit-${key}`}
@@ -211,9 +220,14 @@ const EditForm: React.FC<EditFormProps> = ({
               id={`edit-${key}`}
               type={type || "text"}
               value={(form as any)[key]}
-              onChange={(e) => handleChange(key, e.target.value)}
+              onChange={editable ? (e) => handleChange(key, e.target.value) : undefined}
+              readOnly={!editable}
               placeholder={placeholder}
-              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
+              className={`w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs placeholder:text-gray-400 transition-all duration-200 ${
+                editable
+                  ? "focus:bg-white focus:ring-1.5 focus:ring-emerald-500"
+                  : "cursor-not-allowed"
+              }`}
             />
           </div>
         ))}
@@ -225,7 +239,7 @@ const EditForm: React.FC<EditFormProps> = ({
           Internship Timeline
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5">
-          {dateFields.map(({ key, label }) => (
+          {dateFields.map(({ key, label, editable }) => (
             <div key={key} className="flex flex-col gap-1">
               <label
                 htmlFor={`edit-${key}`}
@@ -238,7 +252,8 @@ const EditForm: React.FC<EditFormProps> = ({
                 id={`edit-${key}`}
                 type="date"
                 value={(form as any)[key]}
-                onChange={(e) => handleChange(key, e.target.value)}
+                onChange={editable ? (e) => handleChange(key, e.target.value) : undefined}
+                readOnly={!editable}
                 className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
               />
             </div>
