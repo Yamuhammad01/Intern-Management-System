@@ -268,7 +268,7 @@ function AppContent() {
           //{ icon: TrendingUp, label: "Performance Tracking" },
           //{ icon: MessageSquare, label: "Mentor Feedback" },
           //{ icon: BookOpen, label: "Learning Milestones" },
-          { icon: BarChart2, label: "Reports" },
+          //{ icon: BarChart2, label: "Reports" },
           //{ icon: Briefcase, label: "Internship Programs" },
           { icon: Building2, label: "Organizations" },
           { icon: MapPin, label: "Placements" },

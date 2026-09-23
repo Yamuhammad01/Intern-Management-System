@@ -12,9 +12,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("INTERN"); // Default role
+  // Self-registration is intern-only: the role is always INTERN (not user-selectable).
+  const REGISTER_ROLE = "INTERN";
   const [program, setProgram] = useState("Software Engineering");
-  const [department, setDepartment] = useState("Engineering");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -65,9 +65,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
         password,
         firstName,
         lastName,
-        role,
-        program: role === "INTERN" ? program : undefined,
-        department: role !== "INTERN" ? department : undefined
+        role: REGISTER_ROLE,
+        program,
       });
 
       setSuccess(true);
@@ -188,87 +187,40 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
           />
         </div>
 
-        {/* Role Selection (formerly Employment Type) */}
+        {/* Internship Program — pick from the list or type your own */}
         <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold text-gray-700" htmlFor="role">
-            Role Selection
+          <label className="text-[11px] font-semibold text-gray-700" htmlFor="program">
+            Internship Program
           </label>
           <div className="relative">
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs text-gray-800 appearance-none focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
+            <input
+              id="program"
+              type="text"
+              list="program-options"
+              value={program}
+              onChange={(e) => setProgram(e.target.value)}
+              placeholder="Select a program or type your own"
+              autoComplete="off"
+              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 pr-10 text-xs text-gray-800 placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
               disabled={success}
-            >
-              <option value="INTERN">Student Intern</option>
-              <option value="SUPERVISOR">Program Supervisor</option>
-              <option value="ADMIN">System Administrator</option>
-            </select>
+            />
+            <datalist id="program-options">
+              <option value="Software Engineering" />
+              <option value="Product Design" />
+              <option value="Data Analytics" />
+              <option value="Marketing & Communications" />
+              <option value="Academic Research" />
+            </datalist>
             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Select from the list or type your own program name. 
+          </p>
         </div>
-
-        {/* Program or Department Selector (Dynamic) */}
-        {role === "INTERN" ? (
-          /* Program (for interns) */
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-semibold text-gray-700" htmlFor="program">
-              Internship Program
-            </label>
-            <div className="relative">
-              <select
-                id="program"
-                value={program}
-                onChange={(e) => setProgram(e.target.value)}
-                className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs text-gray-800 appearance-none focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-                disabled={success}
-              >
-                <option value="Software Engineering">Software Engineering</option>
-                <option value="Product Design">Product Design</option>
-                <option value="Data Analytics">Data Analytics</option>
-                <option value="Marketing">Marketing & Communications</option>
-                <option value="Research">Academic Research</option>
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Department (for supervisor/admin) */
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-semibold text-gray-700" htmlFor="department">
-              Department
-            </label>
-            <div className="relative">
-              <select
-                id="department"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-2.5 text-xs text-gray-800 appearance-none focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-                disabled={success}
-              >
-                <option value="Engineering">Engineering & Operations</option>
-                <option value="Design">Product & UX Design</option>
-                <option value="Marketing">Marketing & Outreach</option>
-                <option value="Research">R&D / Academic Affairs</option>
-                <option value="Administration">Office of the Registrar</option>
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Submit */}
         <button
