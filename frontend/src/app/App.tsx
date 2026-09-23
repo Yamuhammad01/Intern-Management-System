@@ -21,11 +21,13 @@ import {
   Lock,
   Phone,
   Mail,
-  Loader2,
+    Loader2,
   UserCircle,
   Building2,
   MapPin,
-  ClipboardCheck
+  ClipboardCheck,
+  Menu,
+  X
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
@@ -103,9 +105,12 @@ function AppContent() {
   const [resetToken, setResetToken] = useState<string>("");
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [subScreen, setSubScreen] = useState<string | null>(null);
-  const [subParams, setSubParams] = useState<any>({});
+    const [subParams, setSubParams] = useState<any>({});
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close mobile sidebar after navigation (triggered via handleCloseMobileSidebar in nav buttons)
+
   
-  // Handle logbook sub-navigation
   // Handle intern evaluation sub-navigation
   const handleInternEvalNavigate = (view: string, params?: any) => {
     if (view === "evaluations") {
@@ -458,8 +463,29 @@ function AppContent() {
     <div style={{ fontFamily: "Inter, system-ui, sans-serif" }} className="flex h-screen w-full overflow-hidden bg-[#f4f6f8] text-[#111827] text-sm select-none">
       <Toaster />
       
-      {/* ── Sidebar ── */}
-      <aside className="w-[200px] shrink-0 flex flex-col bg-[#0f2d1e] text-[#d1fae5] overflow-y-auto z-10 shadow-lg">
+      {/* Mobile sidebar toggle — visible only on small screens */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="md:hidden fixed top-3 left-3 z-50 p-2 bg-[#0f2d1e] text-white rounded-lg shadow-lg"
+        aria-label="Toggle navigation menu"
+      >
+        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar — desktop always visible, mobile as slide-in drawer */}
+      <aside
+        className={`fixed md:relative top-0 left-0 h-full w-[220px] shrink-0 flex-col bg-[#0f2d1e] text-[#d1fae5] overflow-y-auto z-50 shadow-lg transition-transform duration-200 ease-in-out ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         {/* Logo */}
         <div className="px-4 pt-5 pb-4 flex items-center gap-2 border-b border-white/[0.06] select-none">
           <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md">
@@ -474,7 +500,7 @@ function AppContent() {
             const isSupervisorNav = user && (user.role === "SUPERVISOR" || user.role === "MENTOR") && ["Supervise", "Review Logs", "Feedback", "Evaluations"].includes(label);
             const isAdminEvaluationNav = user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN") && label === "Evaluations";
             return (
-              <button
+                            <button
                 key={label}
                 onClick={() => {
                   if (isSupervisorNav) {
@@ -485,6 +511,10 @@ function AppContent() {
                     setSubParams({});
                   } else {
                     handleTabChange(label);
+                  }
+                  // Close sidebar on mobile after navigation
+                  if (typeof window !== "undefined" && window.innerWidth < 768) {
+                    setSidebarOpen(false);
                   }
                 }}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-colors text-left ${
@@ -521,16 +551,25 @@ function AppContent() {
             Sign Out
           </button>
         </div>
-      </aside>
+            </aside>
 
       {/* ── Main area ── */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative md:pl-[220px]">
 
         {/* Topbar */}
-        <header className="h-[56px] bg-white border-b border-black/[0.07] flex items-center justify-between px-6 shrink-0 z-10 shadow-xs">
-          <div>
-            <p className="text-[10.5px] text-gray-400">Authenticated Portal</p>
-            <p className="text-[14.5px] font-semibold text-[#111827] leading-tight">Welcome, {user.firstName}</p>
+        <header className="h-[56px] bg-white border-b border-black/[0.07] flex items-center justify-between px-4 sm:px-6 shrink-0 z-10 shadow-xs">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
+              aria-label="Toggle navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <p className="text-[10.5px] text-gray-400">Authenticated Portal</p>
+              <p className="text-[14.5px] font-semibold text-[#111827] leading-tight">Welcome, {user.firstName}</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
