@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import { useAuth } from "../../components/AuthContext";
+import { getAccessToken, clearAccessToken } from "../../utils/authToken";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,7 +80,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   // ── Auth helpers ──────────────────────────────────────────────────────────
 
   const getAuthToken = (): string | null => {
-    return token ?? localStorage.getItem("token");
+    
+    return token ?? getAccessToken();
   };
 
   const authHeaders = () => {
@@ -97,7 +99,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleUnauthorized = () => {
     setError("Your session has expired. Please log in again.");
     // Clear stale token
-    localStorage.removeItem("token");
+    clearAccessToken();
     localStorage.removeItem("mock_logged_user");
     // Log out (AuthContext will reset user to null, showing login screen)
     logout();

@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { authHeader } from "../../../utils/authToken";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
 function ReportViewPage({ navigate, reportType = "intern" }) {
   const [reportData, setReportData] = useState(null);
@@ -17,10 +20,12 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
 
   const fetchReportData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/reports/${reportType}`, {
+      // Uses the shared auth helper instead of reading the stale "token" key, and
+      // the configured API base rather than a relative /api/v1 path (which would
+      // hit the frontend origin instead of the backend).
+      const response = await fetch(`${API_BASE}/reports/${reportType}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          ...authHeader(),
         },
       });
       const result = await response.json();

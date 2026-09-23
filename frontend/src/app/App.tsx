@@ -78,6 +78,7 @@ import {
 } from "./pages/evaluations/index";
 
 // Reports
+// @ts-expect-error - ReportsApp is provided as JavaScript without declaration files.
 import ReportsApp from "./pages/reports/ReportsApp";
 
 // Auth Guards

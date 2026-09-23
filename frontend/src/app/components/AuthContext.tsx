@@ -1,4 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  getAccessToken,
+  setAccessToken,
+  clearAccessToken,
+  authHeader,
+} from "../utils/authToken";
 
 export type UserRole = "ADMIN" | "SUPERVISOR" | "INTERN" | "MENTOR" | "SUPER_ADMIN";
 
@@ -31,9 +37,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/auth`
-  : "http://localhost:3000/api/v1/auth";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+const API_URL = `${API_BASE}/auth`;
 
 const DEFAULT_MOCK_USERS: User[] = [
   {
@@ -93,20 +98,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check backend server status
   useEffect(() => {
     const checkBackend = async () => {
+      
+      const storedToken = getAccessToken();
+
       try {
-        const response = await fetch(`${API_URL}/me`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+        if (!storedToken) {
+          
+          try {
+            const health = await fetch(`${API_BASE}/health`);
+            setApiConnected(health.ok);
+            setIsMockMode(!health.ok);
+          } catch {
+            setApiConnected(false);
+            setIsMockMode(true);
           }
+          return;
+        }
+        const response = await fetch(`${API_URL}/me`, {
+          headers: { Authorization: `Bearer ${storedToken}` },
         });
         if (response.ok) {
           const data = await response.json();
           setUser(data.data);
-          setToken(localStorage.getItem("token"));
+          setToken(storedToken);
           setIsMockMode(false);
           setApiConnected(true);
         } else {
-          // If 401/Unauthorized, backend is online but token is expired or missing
+          // Backend is online but the session is no longer valid. Drop the stale
+          // token so we stop replaying it on every subsequent request.
+          if (response.status === 401) {
+            clearAccessToken();
+            setToken(null);
+          }
           setApiConnected(true);
           setIsMockMode(false);
         }
@@ -118,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Restore session from localStorage if in mock mode
         const savedUser = localStorage.getItem("mock_logged_user");
-        const savedToken = localStorage.getItem("token");
+        const savedToken = getAccessToken();
         if (savedUser && savedToken) {
           setUser(JSON.parse(savedUser));
           setToken(savedToken);
@@ -152,11 +175,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(loggedUser);
         setToken(accessToken);
 
-        //  Wipe out any existing key to prevent cache issues
-         localStorage.removeItem("accessToken");
-
-          
-             localStorage.setItem("accessToken", accessToken);
+        // Persist via the shared helper so every reader (including the /auth/me
+        // restore on reload) sees the same token.
+        setAccessToken(accessToken);
 
         return loggedUser;
       } catch (err: any) {
@@ -196,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUser(foundUser);
     setToken("mock-jwt-token");
-    localStorage.setItem("token", "mock-jwt-token");
+    setAccessToken("mock-jwt-token");
     localStorage.setItem("mock_logged_user", JSON.stringify(foundUser));
     return foundUser;
   };
@@ -282,11 +303,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     if (!isMockMode) {
       try {
+        // Only send the Authorization header when a token actually exists —
+       
         await fetch(`${API_URL}/logout`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token || ""}`
+            ...authHeader(),
           }
         });
       } catch (err) {
@@ -295,7 +318,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
+    clearAccessToken();
     localStorage.removeItem("mock_logged_user");
     setLoading(false);
   };
@@ -379,7 +402,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token || ""}`
+            ...authHeader(),
           },
           body: JSON.stringify({ currentPassword, newPassword })
         });

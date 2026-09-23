@@ -2,17 +2,47 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 
+/**
+ * Resolves the HTTP status that will ultimately be sent
+ */
+const resolveStatusCode = (err: Error): number => {
+  if (err instanceof ApiError) {
+    return err.statusCode;
+  }
+
+  if (err.name === 'PrismaClientKnownRequestError') {
+    const code = (err as any).code;
+    if (code === 'P2002') return 409;
+    if (code === 'P2025') return 404;
+  }
+
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+    return 401;
+  }
+
+  return 500;
+};
+
 export const errorHandler = (
   err: Error,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
-  logger.error('Error caught in handler:', {
-    name: err.name,
-    message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  });
+  const statusCode = resolveStatusCode(err);
+
+  if (statusCode >= 500) {
+    logger.error('Error caught in handler:', {
+      name: err.name,
+      message: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
+  } else {
+    // 4xx responses are expected client-side rejections (missing/expired token,
+    // validation errors, permissions). Log them concisely and without a stack so
+    // that genuine server faults are not buried in noise.
+    logger.warn(`Request rejected with ${statusCode}: ${err.name} - ${err.message}`);
+  }
 
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
