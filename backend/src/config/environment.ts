@@ -12,6 +12,7 @@ interface Environment {
   JWT_REFRESH_EXPIRES_IN: string;
   BCRYPT_SALT_ROUNDS: number;
   FRONTEND_URL: string;
+  ALLOW_VERCEL_DEPLOYMENT_URLS: boolean;
   SMTP_HOST: string;
   SMTP_PORT: number;
   SMTP_USER: string;
@@ -37,6 +38,13 @@ export const env: Environment = {
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS || '12', 10),
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+  // Vercel gives every deployment its own hostname in addition to the stable
+  // project alias. Allowing siblings of each configured `*.vercel.app` origin keeps
+  // preview/deployment URLs working, but also trusts any other Vercel project whose
+  // name happens to start with the same prefix (project names are not reserved).
+  // Set to "false" to allow only the exact origins listed in FRONTEND_URL.
+  ALLOW_VERCEL_DEPLOYMENT_URLS:
+    (process.env.ALLOW_VERCEL_DEPLOYMENT_URLS || 'true').toLowerCase() !== 'false',
   SMTP_HOST: process.env.SMTP_HOST || '',
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
   SMTP_USER: process.env.SMTP_USER || '',
