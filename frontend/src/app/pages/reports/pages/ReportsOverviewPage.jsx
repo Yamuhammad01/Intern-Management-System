@@ -37,9 +37,9 @@ function ReportsOverviewPage({ navigate, userRole }) {
       ];
 
   return (
-    <main className="flex-1 overflow-y-auto p-6 space-y-6">
+    <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-[20px] font-bold text-[#0f2d1e]">Reports</h1>
           <p className="text-[12.5px] text-gray-500 mt-0.5">
@@ -50,27 +50,27 @@ function ReportsOverviewPage({ navigate, userRole }) {
         </div>
         <button
           onClick={() => goNew(reportCards[0]?.type || "intern")}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold rounded-xl shadow-sm transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold rounded-xl shadow-sm transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />New Report
         </button>
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { icon: FileText, label: "Reports Generated", value: "47", sub: "This quarter", color: "bg-emerald-50 text-emerald-600" },
           { icon: Download, label: "Total Exports", value: "183", sub: "Across all formats", color: "bg-blue-50 text-blue-600" },
           { icon: Clock, label: "Last Generated", value: "2h", sub: "ago by Jamie Liu", color: "bg-amber-50 text-amber-600" },
           { icon: Activity, label: "Scheduled Reports", value: "5", sub: "Auto-generating", color: "bg-purple-50 text-purple-600" },
         ].map((s) => (
-          <Card key={s.label} className="p-4 flex items-center gap-3">
+          <Card key={s.label} className="p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className={`w-9 h-9 rounded-xl ${s.color} flex items-center justify-center shrink-0`}>
               <s.icon className="w-4 h-4" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] text-gray-500 font-medium">{s.label}</p>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-[20px] font-bold text-[#111827] leading-none">{s.value}</span>
                 <span className="text-[10.5px] text-gray-400">{s.sub}</span>
               </div>
@@ -119,12 +119,13 @@ function ReportsOverviewPage({ navigate, userRole }) {
       </div>
 
       {/* Recent reports table */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-4">
+      <Card className="p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <h2 className="text-[14px] font-semibold text-[#111827]">Recent Reports</h2>
           <button className="text-[12px] text-emerald-600 font-medium hover:underline">View all</button>
         </div>
-        <table className="w-full">
+        <div className="scroll-x-contained -mx-1 px-1">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-100">
               {["Report Name", "Type", "Generated", "By", "Size", "Status", "Actions"].map((h) => (
@@ -167,6 +168,7 @@ function ReportsOverviewPage({ navigate, userRole }) {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
     </main>
   );

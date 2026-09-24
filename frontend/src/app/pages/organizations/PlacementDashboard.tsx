@@ -131,12 +131,12 @@ export function PlacementDashboard() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0">
             <Briefcase className="w-4 h-4" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-bold text-gray-800">Placements</h1>
             <p className="text-[11px] text-gray-500">Manage intern placements and supervisors</p>
           </div>
@@ -299,7 +299,7 @@ export function PlacementDashboard() {
 
         {/* Pagination */}
         {!loading && placements.length > 0 && (
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
             <p className="text-[11px] text-gray-500">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}

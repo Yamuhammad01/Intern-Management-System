@@ -20,8 +20,8 @@ function NewReportPage({ navigate, userRole }) {
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
       {/* Sub-topbar */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           <Breadcrumb
             crumbs={[
               { label: "Reports", action: () => navigate("overview") },
@@ -29,7 +29,7 @@ function NewReportPage({ navigate, userRole }) {
             ]}
           />
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           <button
             onClick={() => navigate("overview")}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-medium text-gray-600 hover:bg-gray-50 transition-colors"
@@ -40,14 +40,16 @@ function NewReportPage({ navigate, userRole }) {
             onClick={handlePreview}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[12.5px] font-semibold transition-colors"
           >
-            <Eye className="w-3.5 h-3.5" />Generate & Preview Report
+            <Eye className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Generate &amp; Preview Report</span>
+            <span className="sm:hidden">Preview</span>
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden flex">
-        {/* ── Left: report type panel ── */}
-        <div className="w-[300px] shrink-0 bg-white border-r border-gray-100 overflow-y-auto p-5 space-y-6">
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+        {/* ── Left: report type panel (stacks above the document on phones) ── */}
+        <div className="w-full lg:w-[300px] lg:shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-gray-100 lg:overflow-y-auto p-4 sm:p-5 space-y-6">
           {/* Report Type */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Report Type</p>
@@ -68,7 +70,7 @@ function NewReportPage({ navigate, userRole }) {
         </div>
 
         {/* ── Right: report structure preview ── */}
-        <div className="flex-1 bg-[#f4f6f8] overflow-y-auto p-6">
+        <div className="flex-1 bg-[#f4f6f8] lg:overflow-y-auto p-4 sm:p-6">
           <div className="max-w-2xl mx-auto">
             <p className="text-[12px] text-gray-500 mb-4 font-medium">
               Report structure preview
@@ -76,7 +78,7 @@ function NewReportPage({ navigate, userRole }) {
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
               {/* Doc header */}
-              <div className="bg-[#0f2d1e] px-8 py-6">
+              <div className="bg-[#0f2d1e] px-5 sm:px-8 py-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
@@ -92,7 +94,7 @@ function NewReportPage({ navigate, userRole }) {
               </div>
 
               {/* Sections list */}
-              <div className="p-6 space-y-3">
+              <div className="p-4 sm:p-6 space-y-3">
                 {SECTIONS[reportType].map((s, i) => (
                   <div key={s} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50">
                     <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-700 shrink-0">
@@ -117,7 +119,7 @@ function NewReportPage({ navigate, userRole }) {
             <div className="mt-5 flex justify-end">
               <button
                 onClick={handlePreview}
-                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold rounded-xl shadow-sm transition-colors"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold rounded-xl shadow-sm transition-colors"
               >
                 <Eye className="w-4 h-4" />Generate & Preview Report
               </button>

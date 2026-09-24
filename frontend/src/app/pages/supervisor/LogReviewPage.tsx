@@ -260,11 +260,11 @@ function FeedbackModal({ onClose, onSubmit, internId, logEntryId }: {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] my-auto overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-gray-800">Add Feedback</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
+          <button onClick={onClose} aria-label="Close feedback dialog" className="p-2 sm:p-1 rounded-lg hover:bg-gray-100">
             <XCircle className="w-4 h-4 text-gray-400" />
           </button>
         </div>

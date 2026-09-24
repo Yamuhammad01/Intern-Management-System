@@ -126,12 +126,12 @@ export function LogDashboard({ onNavigate }: LogDashboardProps) {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0">
             <ClipboardList className="w-4 h-4" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-bold text-gray-800">Activity Logbook</h1>
             <p className="text-[11px] text-gray-500">Track your daily and weekly internship activities</p>
           </div>

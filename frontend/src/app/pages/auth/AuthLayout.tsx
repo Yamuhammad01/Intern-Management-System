@@ -10,7 +10,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const { isMockMode } = useAuth();
 
   return (
-    <div className="min-h-screen w-full flex bg-white text-[#111827] overflow-hidden relative" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div className="min-h-screen app-min-viewport-height w-full flex bg-white text-[#111827] overflow-hidden relative" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
       
       {/* Mock Mode Banner */}
       {isMockMode && (
@@ -120,7 +120,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       </div>
 
       {/* Right Panel: Content Form Wrapper */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16 overflow-y-auto min-h-screen">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-5 sm:p-12 md:p-16 overflow-y-auto min-h-screen app-min-viewport-height">
         <div className="w-full max-w-[420px] py-8 flex flex-col justify-center animate-fade-in">
           {children}
         </div>

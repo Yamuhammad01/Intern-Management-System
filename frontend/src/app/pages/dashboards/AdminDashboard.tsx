@@ -471,13 +471,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {registrations.map(r => (
-              <div key={r.email} className="bg-white rounded-xl border border-amber-200/40 p-3 flex items-center justify-between gap-3 shadow-xs">
-                <div>
+              <div key={r.email} className="bg-white rounded-xl border border-amber-200/40 p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-gray-800">{r.name}</span>
                     <span className="text-[9px] bg-slate-100 text-slate-600 px-1 rounded font-bold">{r.role}</span>
                   </div>
-                  <p className="text-[10px] text-gray-400">{r.email}</p>
+                  <p className="text-[10px] text-gray-400 break-anywhere">{r.email}</p>
                   <p className="text-[9.5px] text-gray-500 mt-1">Track/Dept: {r.entity}</p>
                 </div>
                 <div className="flex gap-2">
@@ -506,7 +506,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Calendar */}
         <div className="lg:col-span-4 bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h3 className="text-[13px] font-semibold text-gray-800">Intern Activity Calendar</h3>
             <div className="flex items-center gap-0.5">
               <button className="p-1 rounded hover:bg-gray-100"><ChevronLeft className="w-3.5 h-3.5 text-gray-400" /></button>
@@ -687,13 +687,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
               <h3 className="text-[13px] font-semibold text-gray-800">Program Distribution</h3>
               <MoreHorizontal className="w-4 h-4 text-gray-400" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <PieChart width={80} height={80}>
                 <Pie data={PROGRAMS} cx={36} cy={36} innerRadius={22} outerRadius={37} dataKey="value" strokeWidth={0}>
                   {programs.map((p, i) => <Cell key={i} fill={p.color} />)}
                 </Pie>
               </PieChart>
-              <div className="flex-1 space-y-1.5">
+              <div className="flex-1 min-w-0 space-y-1.5">
                 {programs.map(p => (
                   <div key={p.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -731,7 +731,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-9 bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div className="flex items-center gap-5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <h3 className="text-[13px] font-semibold text-gray-800">Intern Placements</h3>
               {[
                 [String(kpis.activePlacements), "Active"],
@@ -744,7 +744,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, activities
             </div>
             <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">This Month</span>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scroll-x-contained">
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-100">

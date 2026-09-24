@@ -17,7 +17,7 @@ export default function ReportsApp({ userRole }) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8faf9] font-sans overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 bg-[#f8faf9] font-sans overflow-hidden">
       {page === "overview" && <ReportsOverviewPage navigate={navigate} userRole={userRole} />}
       {page === "new-report" && <NewReportPage navigate={navigate} userRole={userRole} />}
       {page === "preview" && <PreviewReportPage navigate={navigate} reportType={params.reportType || "intern"} />}

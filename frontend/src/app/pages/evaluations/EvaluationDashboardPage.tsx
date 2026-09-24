@@ -135,23 +135,25 @@ export const EvaluationDashboardPage: React.FC<{ onNavigate?: (view: string, par
 
       {/* Filters and Search */}
       <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h3 className="text-[13px] font-bold text-gray-800">Evaluation History</h3>
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search interns..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-64"
+                aria-label="Search interns"
+                className="pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-full"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              aria-label="Filter by status"
+              className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-full sm:w-auto"
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>

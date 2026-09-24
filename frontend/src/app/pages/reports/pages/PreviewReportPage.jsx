@@ -205,40 +205,46 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
       {/* Action bar */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between shrink-0">
-        <Breadcrumb
-          crumbs={[
-            { label: "Reports", action: () => navigate("overview") },
-            { label: "New Report", action: () => navigate("new-report", { reportType }) },
-            { label: "Preview" },
-          ]}
-        />
-        <div className="flex items-center gap-2">
+      <div className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="min-w-0 overflow-x-auto">
+          <Breadcrumb
+            crumbs={[
+              { label: "Reports", action: () => navigate("overview") },
+              { label: "New Report", action: () => navigate("new-report", { reportType }) },
+              { label: "Preview" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center gap-2 flex-wrap ml-auto">
           <button
             onClick={() => navigate("new-report", { reportType })}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5" />Edit Filters
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Edit Filters</span>
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-            <Printer className="w-3.5 h-3.5" />Print
+          <button className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+            <Printer className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Print</span>
           </button>
           <button
             onClick={() => navigate("export", { reportType })}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[12.5px] font-semibold transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 sm:py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[12.5px] font-semibold transition-colors shadow-sm"
           >
-            <Download className="w-3.5 h-3.5" />Export Report
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Export Report</span>
+            <span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden flex">
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         {/* A4 document preview */}
-        <div className="flex-1 bg-[#e8eaed] overflow-y-auto p-8">
+        <div className="flex-1 bg-[#e8eaed] lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
           <div className="max-w-[780px] mx-auto bg-white shadow-2xl rounded-sm" style={{ minHeight: "1060px" }}>
             {/* Report header */}
-            <div className="bg-[#0f2d1e] px-10 py-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-[#0f2d1e] px-5 sm:px-10 py-6 sm:py-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
                     <Briefcase className="w-4 h-4 text-white" />
@@ -248,7 +254,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     <span className="text-emerald-300/70 text-[10px]">Internship Management System</span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="text-emerald-200/60 text-[10px]">Generated: 20 Jun 2025, 09:42 AM</p>
                   <p className="text-emerald-200/60 text-[10px] mt-0.5">Prepared by: Jamie Liu · Confidential</p>
                 </div>
@@ -261,7 +267,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
 
             <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300" />
 
-            <div className="px-10 py-8 space-y-8">
+            <div className="px-5 sm:px-10 py-6 sm:py-8 space-y-6 sm:space-y-8">
               {/* 1. Executive Summary */}
               <section>
                 <div className="flex items-center gap-2 mb-4">
@@ -269,7 +275,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Executive Summary</h2>
                 </div>
                 {summaryStats.length > 0 ? (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     {summaryStats.map((s) => (
                       <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                         <p className="text-[10px] text-gray-500 font-medium mb-1">{s.label}</p>
@@ -279,14 +285,14 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     ))}
                   </div>
                 ) : summaryLoading ? (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
-                    <div className="col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-2 sm:col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
                       <p className="text-[11px] text-gray-400">Loading executive summary...</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
-                    <div className="col-span-4 bg-red-50 rounded-xl p-4 border border-red-100 text-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-2 sm:col-span-4 bg-red-50 rounded-xl p-4 border border-red-100 text-center">
                       <p className="text-[11px] text-red-500">Unable to load executive summary. Please check console for details.</p>
                     </div>
                   </div>
@@ -311,7 +317,8 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   </h2>
                 </div>
                 {reportType === "organization" ? (
-                  <table className="w-full">
+                  <div className="scroll-x-contained -mx-1 px-1">
+                  <table className="w-full min-w-[520px]">
                     <thead>
                       <tr className="border-b-2 border-gray-200">
                         {["Department", "Interns", "Avg. Score", "Task Completion", "At-Risk"].map((h) => (
@@ -340,8 +347,10 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 ) : (
-                  <table className="w-full">
+                  <div className="scroll-x-contained -mx-1 px-1">
+                  <table className="w-full min-w-[520px]">
                     <thead>
                       <tr className="border-b-2 border-gray-200">
                         {["Intern", "Program", "Attendance", "Score", "Status"].map((h) => (
@@ -392,6 +401,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                       )}
                     </tbody>
                   </table>
+                  </div>
                 )}
               </section>
 
@@ -404,6 +414,8 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Skills Assessment</h2>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="scroll-x-contained">
+                  <div className="min-w-[560px]">
                   <div className="grid grid-cols-6 gap-2 mb-3">
                     {["Intern", "Technical Skills", "Communication", "Problem Solving", "Attendance", "Conduct"].map((h) => (
                       <div key={h} className="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center first:text-left">{h}</div>
@@ -442,6 +454,8 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     ))
                   )}
                 </div>
+                  </div>
+                  </div>
               </section>
 
               <div className="h-px bg-gray-100" />
@@ -453,8 +467,8 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                   <h2 className="text-[15px] font-bold text-[#0f2d1e]">Task Completion</h2>
                 </div>
                 {taskStatsLoading ? (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
-                    <div className="col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="col-span-2 sm:col-span-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
                       <div className="flex items-center justify-center gap-2 text-[12px] text-gray-500">
                         <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                         Loading task stats...
@@ -462,7 +476,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     </div>
                   </div>
                 ) : taskStats ? (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     {[
                       { label: "Total Tasks", value: String(taskStats.total), color: "text-gray-700", pos: true },
                       { label: "Completed", value: String(taskStats.completed), color: "text-emerald-600", pos: true },
@@ -508,7 +522,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     ) : (
                       <div className="space-y-3">
                         {rankingData.topPerformers.map((intern, i) => (
-                          <div key={intern.ini || i} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                          <div key={intern.ini || i} className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
                             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-[11px] shrink-0">
                               #{i + 1}
                             </div>
@@ -557,7 +571,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
                     ) : (
                       <div className="space-y-3">
                         {rankingData.atRiskInterns.map((intern, i) => (
-                          <div key={intern.ini || i} className="flex items-center gap-4 p-4 rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50/50 to-transparent">
+                          <div key={intern.ini || i} className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50/50 to-transparent">
                             <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-[11px] shrink-0">
                               #{i + 1}
                             </div>
@@ -590,7 +604,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
               )}
 
               {/* Footer */}
-              <div className="border-t border-gray-100 pt-5 flex items-center justify-between">
+              <div className="border-t border-gray-100 pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <p className="text-[10px] text-gray-400">InternHub · Confidential — For internal use only. Generated on 20 Jun 2025.</p>
                 <p className="text-[10px] text-gray-400">Page 1 of 4</p>
               </div>
@@ -599,7 +613,7 @@ function PreviewReportPage({ navigate, reportType = "intern" }) {
         </div>
 
         {/* Right sidebar: TOC + quick export */}
-        <div className="w-[220px] shrink-0 bg-white border-l border-gray-100 overflow-y-auto p-4 space-y-5">
+        <div className="w-full lg:w-[220px] lg:shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-gray-100 lg:overflow-y-auto p-4 space-y-5">
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Contents</p>
             <div className="space-y-1">

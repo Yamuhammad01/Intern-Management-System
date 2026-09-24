@@ -106,12 +106,13 @@ export const SupervisorDashboard: React.FC<SupervisorDashboardProps> = ({ user, 
 
       {/* Row 2: Interns Directory */}
       <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h3 className="text-[13px] font-semibold text-gray-800">Assigned Student Interns</h3>
           <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Department: {user.department || "Engineering"}</span>
         </div>
         
-        <table className="w-full">
+        <div className="scroll-x-contained">
+        <table className="w-full min-w-[620px]">
           <thead>
             <tr className="border-b border-gray-100 text-gray-400 text-[10.5px] font-medium text-left">
               <th className="pb-2 pr-3 pl-0">Student Name</th>
@@ -168,6 +169,7 @@ export const SupervisorDashboard: React.FC<SupervisorDashboardProps> = ({ user, 
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Row 3: Evaluation Form and Task Submissions */}

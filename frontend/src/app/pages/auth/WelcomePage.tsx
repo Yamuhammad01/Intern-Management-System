@@ -44,7 +44,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onNavigate }) => {
           </svg>
         </div>
         <h2 className="text-2xl font-bold tracking-tight text-[#111827] mb-2">
-          University Management System
+          Internship Management System
         </h2>
         <p className="text-xs text-gray-500 leading-relaxed">
           Access the secure portal to coordinate, monitor, and evaluate student internships.

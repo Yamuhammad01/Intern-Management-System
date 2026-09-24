@@ -39,6 +39,14 @@
           overflow: visible !important;
           height: auto !important;
         }
+
+        /* Report view scrolls inside the app shell on screen; in print the
+           document must flow naturally across pages. */
+        .report-scroll {
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+        }
         
         /* Ensure proper typography for print */
         .max-w-4xl, .max-w-2xl {

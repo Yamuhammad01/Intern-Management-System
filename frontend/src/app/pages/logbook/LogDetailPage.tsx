@@ -176,8 +176,8 @@ export function LogDetailPage({ onNavigate, logId }: LogDetailPageProps) {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => onNavigate("Logbook")}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"

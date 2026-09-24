@@ -164,7 +164,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex items-center justify-center min-h-full bg-white p-6">
         <div className="text-gray-500">Loading report...</div>
       </div>
     );
@@ -172,14 +172,14 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
 
   if (!reportData) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex items-center justify-center min-h-full bg-white p-6">
         <div className="text-gray-500">Failed to load report data</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="report-scroll h-full overflow-y-auto bg-white p-4 sm:p-6 lg:p-8">
       {/* Report Header */}
       <div className="max-w-4xl mx-auto mb-8 text-center border-b pb-6">
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -200,7 +200,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
       {/* Executive Summary */}
       <div className="max-w-4xl mx-auto mb-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Executive Summary</h3>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div className="border border-gray-200 rounded-lg p-4">
             <p className="text-sm text-gray-600 mb-1">Total Interns</p>
             <p className="text-3xl font-bold text-gray-900">{reportData.sections.executiveSummary.totalInterns}</p>
@@ -245,7 +245,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
                     <p className="text-2xl font-bold text-gray-900">{scorecard.overallScore}/10</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
                   <div>
                     <p className="text-xs text-gray-700 mb-1">Technical Skills</p>
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -281,7 +281,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
       {reportData.sections.skillsAssessment && (
         <div className="max-w-4xl mx-auto mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Skills Assessment</h3>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="border border-gray-200 rounded-lg p-5">
               <h4 className="text-lg font-semibold text-gray-900 mb-3">Technical Skills</h4>
               <p className="text-sm text-gray-700 mb-3">Average Score: {reportData.sections.skillsAssessment.technicalSkills.average}/10</p>
@@ -325,7 +325,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
         <div className="max-w-4xl mx-auto mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Task Completion</h3>
           <div className="border border-gray-200 rounded-lg p-5">
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <div className="text-center">
                 <p className="text-4xl font-bold text-gray-900">{reportData.sections.taskCompletion.totalTasks}</p>
                 <p className="text-xs text-gray-600 mt-1">Total Tasks</p>
@@ -379,7 +379,7 @@ function ReportViewPage({ navigate, reportType = "intern" }) {
       {reportData.sections.recommendations && (
         <div className="max-w-4xl mx-auto mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Recommendations</h3>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="border border-gray-200 rounded-lg p-5">
               <h4 className="text-lg font-semibold text-gray-900 mb-3">Training Programs</h4>
               <ul className="space-y-2">

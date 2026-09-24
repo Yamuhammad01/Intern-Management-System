@@ -683,6 +683,7 @@ export const ProfileDashboard: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsEditing(false)}
+                aria-label="Close edit profile"
                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4 text-gray-400" />

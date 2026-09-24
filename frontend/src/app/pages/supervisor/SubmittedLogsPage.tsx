@@ -69,8 +69,8 @@ export function SubmittedLogsPage({ onNavigate }: SubmittedLogsPageProps) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button onClick={() => onNavigate("Supervise")} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
             <ArrowLeft className="w-4 h-4 text-gray-600" />
           </button>

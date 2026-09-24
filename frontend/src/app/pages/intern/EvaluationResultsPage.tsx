@@ -143,23 +143,25 @@ export const EvaluationResultsPage: React.FC<{ onNavigate?: (view: string, param
 
       {/* List */}
       <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h3 className="text-[13px] font-bold text-gray-800">My Evaluation Results</h3>
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="relative w-full sm:w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by supervisor..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-56"
+                aria-label="Search evaluations by supervisor"
+                className="pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-full"
               />
             </div>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
-              className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              aria-label="Sort evaluations"
+              className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-[12px] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-full sm:w-auto"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>

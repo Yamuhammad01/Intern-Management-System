@@ -53,8 +53,8 @@ export const EvaluationReportPage: React.FC<{ onNavigate?: (view: string, params
     <div className="space-y-4">
       {/* Header Actions */}
       <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>

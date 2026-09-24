@@ -274,7 +274,7 @@ export function LogHistoryPage({ onNavigate }: LogHistoryPageProps) {
 
             {/* Pagination */}
             {!loading && entries.length > 0 && (
-              <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[11px] text-gray-500">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}

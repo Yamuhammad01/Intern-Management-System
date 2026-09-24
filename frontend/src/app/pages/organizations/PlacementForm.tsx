@@ -195,8 +195,8 @@ export function PlacementForm({ placement, onClose, onSuccess }: PlacementFormPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl border border-black/[0.07] shadow-lg w-full max-w-lg p-6 relative space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl border border-black/[0.07] shadow-lg w-full max-w-lg p-5 sm:p-6 relative space-y-5 max-h-[90vh] my-auto overflow-y-auto">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-800">
             {placement ? "Edit Placement" : "Add Placement"}

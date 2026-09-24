@@ -165,6 +165,91 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Responsive foundations
+   Shared, breakpoint-driven rules that keep every screen fluid from 320px
+   phones to 1440px+ desktops. These are additive — no design tokens above are
+   changed, so the desktop experience stays exactly as designed.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Media and embedded content can never be wider than its container. */
+img,
+svg,
+video,
+canvas,
+iframe,
+embed,
+object {
+  max-width: 100%;
+}
+
+/* Raster/video media keeps its intrinsic aspect ratio when scaled down. */
+img,
+video {
+  height: auto;
+}
+
+/* Long unbreakable strings (emails, matric numbers, reference codes) wrap
+   instead of forcing the page wider than the viewport. */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* App shells sized against the *visible* viewport so mobile browser chrome
+   (address bar / toolbars) never hides the bottom of the layout. */
+.app-viewport-height {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.app-min-viewport-height {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Contained horizontal scrollers (wide data tables) get momentum scrolling on
+   touch devices; the scroll stays inside the component and never leaks to the
+   page itself. */
+.scroll-x-contained {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Phones only: sub-12px utility labels are metadata (dates, chip labels, table
+   headers). Raising them to 11.5px keeps every label readable at 320–430px
+   without zooming, while tablets/desktop keep the original compact scale. */
+@media (max-width: 639px) {
+  [class*="text-[9"],
+  [class*="text-[10"],
+  [class*="text-[11"] {
+    font-size: 11.5px;
+  }
+}
+
+/* Mobile navigation drawer entrance. Disabled for users who ask for reduced
+   motion. */
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-drawer-in {
+  animation: drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-drawer-in {
+    animation: none;
+  }
+}
+
   }
 
   button {
