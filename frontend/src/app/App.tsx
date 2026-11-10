@@ -32,6 +32,7 @@ import {
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { LogoIcon } from "./components/brand/Logo";
+import { AppLayout } from "./components/layout/AppLayout";
 import { AuthLayout } from "./pages/auth/AuthLayout";
 import { WelcomePage } from "./pages/auth/WelcomePage";
 import { LoginPage } from "./pages/auth/LoginPage";
@@ -108,73 +109,6 @@ function AppContent() {
   const [subScreen, setSubScreen] = useState<string | null>(null);
   const [subParams, setSubParams] = useState<any>({});
 
-  // ── Mobile navigation drawer ─────────────────────────────────────────────
-  // Below the `md` breakpoint the sidebar becomes a slide-in drawer so the
-  // content area gets the full viewport width. Desktop keeps the in-flow
-  // 200px column untouched.
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const mobileSidebarRef = useRef<HTMLElement | null>(null);
-  const mobileCloseRef = useRef<HTMLButtonElement | null>(null);
-  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  const openSidebar = () => setSidebarOpen(true);
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-    // Return focus to the trigger so keyboard users keep their place.
-    mobileMenuButtonRef.current?.focus();
-  };
-
-  // Close on Escape, keep Tab focus inside the drawer while it is open and move
-  // initial focus to the close button (accessible drawer behaviour).
-  useEffect(() => {
-    if (!sidebarOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSidebarOpen(false);
-        mobileMenuButtonRef.current?.focus();
-        return;
-      }
-
-      if (event.key !== "Tab" || !mobileSidebarRef.current) return;
-
-      const focusable = mobileSidebarRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-      const insideDrawer = active ? mobileSidebarRef.current.contains(active) : false;
-
-      if (event.shiftKey && (active === first || !insideDrawer)) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    mobileCloseRef.current?.focus();
-
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [sidebarOpen]);
-
-  // The drawer is mobile-only: discard it when the viewport reaches the desktop
-  // layout so the two navigations never render at the same time.
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 768px)");
-    const onChange = (event: MediaQueryListEvent) => {
-      if (event.matches) setSidebarOpen(false);
-    };
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  
   // Handle logbook sub-navigation
   // Handle intern evaluation sub-navigation
   const handleInternEvalNavigate = (view: string, params?: any) => {
@@ -304,53 +238,6 @@ function AppContent() {
     );
   }
 
-  // Determine Navigation items by user Role
-  const getNavItems = () => {
-    switch (user.role) {
-      case "INTERN":
-        return [
-          { icon: LayoutDashboard, label: "Dashboard" },
-          { icon: ClipboardList, label: "Logbook" },
-          { icon: UserCircle, label: "Intern Profile" },
-        //  { icon: CalendarCheck, label: "My Attendance" },
-        //  { icon: Star, label: "Mentor Feedback" },
-          { icon: TrendingUp, label: "My Evaluations" },
-          { icon: Settings, label: "Settings" }
-        ];
-      case "SUPERVISOR":
-      case "MENTOR":
-        return [
-          { icon: LayoutDashboard, label: "Dashboard" },
-          { icon: Users, label: "Supervise" },
-          { icon: ClipboardList, label: "Review Logs" },
-          { icon: MessageSquare, label: "Feedback" },
-          { icon: ClipboardCheck, label: "Evaluations" },
-          { icon: BarChart2, label: "Reports" },
-          { icon: Settings, label: "Settings" }
-        ];
-      case "ADMIN":
-      case "SUPER_ADMIN":
-      default:
-        return [
-          { icon: LayoutDashboard, label: "Dashboard" },
-         // { icon: Users, label: "Interns" },
-          //{ icon: CalendarCheck, label: "Attendance" },
-          // { icon: ClipboardList, label: "Tasks & Deliverables" },
-          //{ icon: TrendingUp, label: "Performance Tracking" },
-          //{ icon: MessageSquare, label: "Mentor Feedback" },
-          //{ icon: BookOpen, label: "Learning Milestones" },
-          //{ icon: BarChart2, label: "Reports" },
-          //{ icon: Briefcase, label: "Internship Programs" },
-          { icon: Building2, label: "Organizations" },
-          { icon: MapPin, label: "Placements" },
-          //{ icon: ClipboardCheck, label: "Evaluations" },
-          { icon: Settings, label: "Settings" }
-        ];
-    }
-  };
-
-  const navItems = getNavItems();
-
   // Get user avatar initials
   const getInitials = () => {
     return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
@@ -377,19 +264,21 @@ function AppContent() {
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* User profile card */}
-          <div className="lg:col-span-6 bg-white rounded-xl border border-black/[0.07] p-5 shadow-sm space-y-4">
+          <div className="lg:col-span-6 bg-white rounded-2xl border border-[#d8e5ee] p-6 shadow-xs space-y-5">
             <div>
               <h3 className="text-[13.5px] font-semibold text-gray-800">My Profile</h3>
               <p className="text-[11px] text-gray-400">View your registration details and program track.</p>
             </div>
             
             <div className="flex items-center gap-4 border-b border-gray-50 pb-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-600 flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-14 h-14 rounded-full bg-gradient-ip-teal flex items-center justify-center text-white text-base font-bold shadow-xs">
                 {getInitials()}
               </div>
               <div>
                 <p className="text-sm font-bold text-gray-800">{user.firstName} {user.lastName}</p>
-                <p className="text-xs text-gray-500 font-medium">{getRoleLabel()}</p>
+                <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#e6f4f8] text-[#1c647e]">
+                  {getRoleLabel()}
+                </span>
               </div>
             </div>
 
@@ -542,190 +431,37 @@ function AppContent() {
     }
   };
 
-  const renderSidebarBrand = () => (
-    <div className="px-4 pt-5 pb-4 flex items-center gap-2 border-b border-white/[0.06] select-none">
-      <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md">
-        <Briefcase className="w-3.5 h-3.5 text-white" />
-      </div>
-      <span className="text-white font-semibold text-sm tracking-tight">InternHub</span>
-    </div>
-  );
-
-  const renderSidebarNav = (onNavigate?: () => void) => (
-    <nav className="flex-1 px-2.5 py-3 space-y-0.5">
-      {navItems.map(({ icon: Icon, label }) => (
-        <button
-          key={label}
-          onClick={() => {
-            handleNavClick(label);
-            onNavigate?.();
-          }}
-          className={`w-full flex items-center gap-2.5 px-3 py-2.5 md:px-2.5 md:py-[7px] rounded-lg text-[13.5px] md:text-[12.5px] font-medium transition-colors text-left ${
-            activeTab === label
-              ? "bg-[#10b981] text-white shadow-sm"
-              : "text-[#a7f3d0] hover:bg-white/[0.07] hover:text-white"
-          }`}
-        >
-          <Icon className="w-[15px] h-[15px] shrink-0" />
-          {label}
-        </button>
-      ))}
-    </nav>
-  );
-
-  const renderSidebarFooter = (onNavigate?: () => void) => (
-    <>
-      {/* Promo card */}
-      <div className="mx-2.5 mb-2 rounded-xl bg-emerald-950/60 p-3 border border-emerald-800/20">
-        <div className="flex items-center gap-1.5 mb-1">
-          <Zap className="w-3 h-3 text-emerald-300" />
-          <p className="text-[11px] font-semibold text-emerald-200">University Portal</p>
-        </div>
-        <p className="text-[10px] text-emerald-300/60 leading-snug mb-2">
-          Access secure grading modules and download internship reports.
-        </p>
-      </div>
-
-      {/* Log Out button */}
-      <div className="p-2.5 border-t border-white/[0.06] mb-1">
-        <button
-          onClick={() => {
-            logout();
-            onNavigate?.();
-          }}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 md:px-2.5 md:py-[7px] rounded-lg text-[13.5px] md:text-[12.5px] font-medium text-emerald-300 hover:bg-red-950/20 hover:text-red-300 transition-colors text-left"
-        >
-          <LogOut className="w-[15px] h-[15px] shrink-0" />
-          Sign Out
-        </button>
-      </div>
-    </>
-  );
-
   return (
-    <div style={{ fontFamily: "Inter, system-ui, sans-serif" }} className="flex app-viewport-height w-full overflow-hidden bg-[#f4f6f8] text-[#111827] text-sm select-none">
-      <Toaster />
-      
-      {/* ── Sidebar — desktop rail (in-flow, unchanged) ── */}
-      <aside className="hidden md:flex w-[200px] shrink-0 flex-col bg-[#0f2d1e] text-[#d1fae5] overflow-y-auto z-10 shadow-lg">
-        {renderSidebarBrand()}
-        {renderSidebarNav()}
-        {renderSidebarFooter()}
-      </aside>
-
-      {/* ── Sidebar — mobile drawer (< 768px) ── */}
-      {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Main navigation">
-          {/* Backdrop — tap to dismiss */}
-          <div className="absolute inset-0 bg-black/60" onClick={closeSidebar} aria-hidden="true" />
-
-          <aside
-            id="mobile-sidebar"
-            ref={mobileSidebarRef}
-            className="absolute inset-y-0 left-0 w-[272px] max-w-[85vw] flex flex-col bg-[#0f2d1e] text-[#d1fae5] overflow-y-auto overscroll-contain shadow-2xl animate-drawer-in"
+    <AppLayout
+      user={user}
+      activeTab={activeTab}
+      onNavClick={handleNavClick}
+      onLogout={logout}
+      onNavigateToSettings={() => handleTabChange("Settings")}
+    >
+      {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook", "My Evaluations", "Reports"].includes(activeTab) ? (
+        renderMainContent()
+      ) : (
+        /* Tab Placeholder view */
+        <div className="bg-white rounded-2xl border border-[#d8e5ee] p-6 sm:p-8 shadow-xs flex flex-col items-center justify-center text-center gap-4 max-w-md mx-auto my-8 sm:my-12 animate-fade-in">
+          <div className="w-12 h-12 bg-[#e6f4f8] border border-[#bfe7f3] rounded-full flex items-center justify-center text-[#248da9]">
+            <Lock className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#183348]">Module Integrated</h3>
+            <p className="text-xs text-[#607b91] mt-1 leading-relaxed">
+              The <b>{activeTab}</b> features are active. In this release, all core metrics, databases, and evaluations are fully displayed and editable directly on the main <b>Dashboard</b> tab for convenience.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleTabChange("Dashboard")}
+            className="bg-[#265275] hover:bg-[#1e4361] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shadow-xs"
           >
-            <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3 border-b border-white/[0.06] select-none">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md shrink-0">
-                  <Briefcase className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="text-white font-semibold text-sm tracking-tight truncate">InternHub</span>
-              </div>
-              <button
-                ref={mobileCloseRef}
-                onClick={closeSidebar}
-                aria-label="Close navigation menu"
-                className="p-2 -mr-1 -mt-1 rounded-lg text-emerald-200 hover:bg-white/10 hover:text-white transition-colors shrink-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {renderSidebarNav(closeSidebar)}
-            {renderSidebarFooter(closeSidebar)}
-          </aside>
+            Return to Dashboard
+          </button>
         </div>
       )}
-
-      {/* ── Main area ── */}
-      <div className="flex-1 min-w-0 flex flex-col overflow-hidden relative">
-
-        {/* Topbar */}
-        <header className="h-[56px] bg-white border-b border-black/[0.07] flex items-center justify-between gap-2 px-3 sm:px-4 lg:px-6 shrink-0 z-10 shadow-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Mobile menu trigger */}
-            <button
-              ref={mobileMenuButtonRef}
-              onClick={openSidebar}
-              aria-label="Open navigation menu"
-              aria-controls="mobile-sidebar"
-              aria-expanded={sidebarOpen}
-              className="md:hidden -ml-1 p-2 rounded-lg text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors shrink-0"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="min-w-0">
-              <p className="hidden sm:block text-[10.5px] text-gray-400 truncate">Authenticated Portal</p>
-              <p className="text-[14.5px] font-semibold text-[#111827] leading-tight truncate">Welcome, {user.firstName}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <label className="hidden sm:flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 cursor-text">
-              <Search className="w-3.5 h-3.5 text-gray-400" />
-              <input className="bg-transparent text-xs outline-none w-32 md:w-40 placeholder:text-gray-400" placeholder="Search resources..." aria-label="Search resources" />
-            </label>
-            
-            <button className="relative p-2 rounded-lg hover:bg-gray-100 shrink-0" aria-label="Notifications">
-              <Bell className="w-4 h-4 text-gray-500" />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-            </button>
-
-            {/* Profile badge */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("Settings")}
-              aria-label="Open account settings"
-              className="flex items-center gap-2 text-left cursor-pointer border border-transparent hover:border-gray-100 rounded-lg p-1.5 transition-colors shrink-0"
-            >
-              <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
-                {getInitials()}
-              </div>
-              <div className="hidden md:block text-left">
-                <p className="text-xs font-semibold leading-none">{user.firstName} {user.lastName.charAt(0)}.</p>
-                <p className="text-[9.5px] text-gray-400 mt-0.5">{getRoleLabel()}</p>
-              </div>
-              <ChevronDown className="w-3 h-3 text-gray-400 hidden md:block" />
-            </button>
-          </div>
-        </header>
-
-        {/* Scrollable content */}
-        <main className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4 lg:p-5 relative bg-[#f4f6f8]">
-          {["Dashboard", "Settings", "Intern Profile", "Organizations", "Placements", "Logbook", "My Evaluations", "Reports"].includes(activeTab) ? (
-            renderMainContent()
-          ) : (
-            /* Tab Placeholder view */
-            <div className="bg-white rounded-xl border border-black/[0.07] p-6 sm:p-8 shadow-sm flex flex-col items-center justify-center text-center gap-4 max-w-md mx-auto my-8 sm:my-12 animate-fade-in">
-              <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                <Lock className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-800">Module Integrated</h3>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                  The <b>{activeTab}</b> features are active. In this release, all core metrics, databases, and evaluations are fully displayed and editable directly on the main <b>Dashboard</b> tab for convenience.
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveTab("Dashboard")}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
-              >
-                Return to Dashboard
-              </button>
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
+    </AppLayout>
   );
 }
