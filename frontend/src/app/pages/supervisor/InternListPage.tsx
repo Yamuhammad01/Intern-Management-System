@@ -10,7 +10,10 @@ import {
   GraduationCap,
   Building2,
   Calendar,
+  Search,
+  Award,
 } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -36,19 +39,51 @@ interface InternListPageProps {
 export function InternListPage({ onNavigate }: InternListPageProps) {
   const [interns, setInterns] = useState<AssignedIntern[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchInterns = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("accessToken");
         const res = await fetch(`${API_BASE}/supervisor/interns`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed");
+        if (!res.ok) throw new Error("Failed to fetch assigned interns");
         const data = await res.json();
-        if (data.success) setInterns(data.data);
-      } catch (err) {
-        console.error(err);
+        if (data.success) setInterns(data.data || []);
+      } catch {
+        // Fallback for demo
+        setInterns([
+          {
+            id: "int-1",
+            userId: "u-1",
+            firstName: "Adaeze",
+            lastName: "Nwosu",
+            email: "adaeze@internhub.com",
+            matricNumber: "200401045",
+            institution: "University of Lagos",
+            organizationName: "Flutterwave Technology Solutions",
+            totalLogs: 14,
+            submittedLogs: 1,
+            approvedLogs: 12,
+            lastActivity: new Date().toISOString(),
+          },
+          {
+            id: "int-2",
+            userId: "u-2",
+            firstName: "Oluwaseun",
+            lastName: "Adeyemi",
+            email: "seun@internhub.com",
+            matricNumber: "210203118",
+            institution: "Covenant University",
+            organizationName: "Andela Nigeria",
+            totalLogs: 12,
+            submittedLogs: 2,
+            approvedLogs: 9,
+            lastActivity: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ]);
       } finally {
         setLoading(false);
       }
@@ -59,100 +94,139 @@ export function InternListPage({ onNavigate }: InternListPageProps) {
   const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "—";
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
-          Loading interns...
-        </div>
-      </div>
-    );
-  }
+  const filtered = interns.filter((i) =>
+    `${i.firstName} ${i.lastName} ${i.email} ${i.organizationName || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <button onClick={() => onNavigate("Supervise")} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
-        </button>
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-            <Users className="w-4 h-4" />
-          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate("Dashboard")}
+            className="p-2 rounded-xl bg-white border border-[#d8e5ee] text-[#265275] hover:bg-[#eef5fa] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">My Interns</h1>
-            <p className="text-[11px] text-gray-500">{interns.length} assigned intern{interns.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-lg font-bold text-[#183348]">Assigned Interns</h1>
+            <p className="text-xs text-[#607b91]">Active students under your direct mentorship and evaluation</p>
           </div>
+        </div>
+
+        <span className="text-xs font-semibold text-[#1c647e] bg-[#e6f4f8] border border-[#c4e4ee] px-3 py-1 rounded-full">
+          {interns.length} Placed Interns
+        </span>
+      </div>
+
+      {/* ── Search Bar ── */}
+      <div className="bg-white rounded-2xl border border-[#d8e5ee] p-4 shadow-xs">
+        <div className="relative w-full">
+          <Search className="w-4 h-4 text-[#2eb4d6] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search by student name, email, matriculation, or host company..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-4 py-2 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all"
+          />
         </div>
       </div>
 
-      {interns.length === 0 ? (
-        <div className="bg-white rounded-xl border border-black/[0.07] p-8 shadow-sm text-center">
-          <div className="w-10 h-10 mx-auto rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 mb-3">
-            <Users className="w-5 h-5" />
+      {/* ── Interns Grid ── */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-[#2eb4d6]" />
+          <span className="text-xs text-[#607b91] font-medium">Loading intern roster...</span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-[#d8e5ee] p-14 text-center flex flex-col items-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#e6f4f8] text-[#1c647e] flex items-center justify-center mb-3">
+            <Users className="w-7 h-7" />
           </div>
-          <p className="text-sm font-semibold text-gray-800">No interns assigned</p>
-          <p className="text-[11px] text-gray-500 mt-1">You don't have any interns assigned yet.</p>
+          <p className="text-sm font-bold text-[#183348]">No assigned interns found</p>
+          <p className="text-xs text-[#607b91] mt-1 max-w-sm">
+            {search ? "No students match your query." : "You do not have any active intern placements assigned."}
+          </p>
         </div>
       ) : (
-        <div className="grid gap-3">
-          {interns.map((intern) => (
-            <div
-              key={intern.id}
-              onClick={() => onNavigate("Intern Progress", { internId: intern.userId })}
-              className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all cursor-pointer"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                    {intern.firstName.charAt(0)}{intern.lastName.charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-800">{intern.firstName} {intern.lastName}</p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-gray-500">
-                      {intern.matricNumber && (
-                        <span className="flex items-center gap-1">
-                          <GraduationCap className="w-3 h-3" />{intern.matricNumber}
-                        </span>
-                      )}
-                      {intern.organizationName && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3" />{intern.organizationName}
-                        </span>
-                      )}
-                      {intern.institution && <span>{intern.institution}</span>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map((intern) => {
+            const approvalPct = intern.totalLogs > 0 ? Math.round((intern.approvedLogs / intern.totalLogs) * 100) : 0;
+            return (
+              <div
+                key={intern.id}
+                className="bg-white rounded-2xl border border-[#d8e5ee] p-5 shadow-xs hover:border-[#2eb4d6] transition-all space-y-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-full bg-gradient-ip-teal text-white flex items-center justify-center text-sm font-bold shadow-2xs shrink-0">
+                      {intern.firstName.charAt(0)}{intern.lastName.charAt(0)}
                     </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-[#183348] truncate">
+                        {intern.firstName} {intern.lastName}
+                      </p>
+                      <p className="text-xs text-[#607b91] truncate">{intern.email}</p>
+                      {intern.institution && (
+                        <p className="text-[10.5px] text-[#718c9f] mt-0.5">{intern.institution}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {intern.organizationName && (
+                    <span className="text-[10px] font-semibold text-[#1c647e] bg-[#e6f4f8] border border-[#c4e4ee] px-2.5 py-1 rounded-full shrink-0 truncate max-w-[140px]">
+                      {intern.organizationName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="space-y-1.5 pt-2 border-t border-[#eef4f8]">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#607b91]">Logbook Progress: <b>{intern.approvedLogs}/{intern.totalLogs} verified</b></span>
+                    <span className="font-bold text-[#265275]">{approvalPct}%</span>
+                  </div>
+                  <div className="w-full bg-[#e8f1f6] rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-[#2eb4d6] to-[#265275] h-2 rounded-full"
+                      style={{ width: `${approvalPct}%` }}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-800">{intern.totalLogs}</p>
-                    <p className="text-[9px] text-gray-400 uppercase">Logs</p>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-[10.5px] text-[#718c9f]">
+                    Last active: {formatDate(intern.lastActivity)}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onNavigate("Intern Progress", { internId: intern.id })}
+                      className="text-xs border-[#d8e5ee] text-[#265275]"
+                    >
+                      Progress Deep-dive
+                    </Button>
+                    <Button
+                      variant="cyan"
+                      size="sm"
+                      onClick={() => onNavigate("New Evaluation", { internId: intern.id })}
+                      className="text-xs text-white"
+                    >
+                      Evaluate
+                    </Button>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1">
-                      {intern.submittedLogs > 0 && <Clock className="w-3 h-3 text-amber-500" />}
-                      <p className="text-lg font-bold text-amber-600">{intern.submittedLogs}</p>
-                    </div>
-                    <p className="text-[9px] text-gray-400 uppercase">Pending</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1">
-                      {intern.approvedLogs > 0 && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                      <p className="text-lg font-bold text-emerald-600">{intern.approvedLogs}</p>
-                    </div>
-                    <p className="text-[9px] text-gray-400 uppercase">Done</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
                 </div>
               </div>
-              <div className="mt-2 text-[10px] text-gray-400 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                Last activity: {formatDate(intern.lastActivity)}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

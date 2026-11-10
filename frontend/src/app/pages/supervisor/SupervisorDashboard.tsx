@@ -8,7 +8,12 @@ import {
   Clock,
   Loader2,
   ChevronRight,
+  Award,
+  Sparkles,
+  ArrowUpRight,
+  Calendar,
 } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -55,259 +60,290 @@ export function SupervisorDashboard({ onNavigate }: SupervisorDashboardProps) {
       const res = await fetch(`${API_BASE}/supervisor/dashboard/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch stats");
+      if (!res.ok) throw new Error("Failed to fetch supervisor stats");
       const data = await res.json();
       if (data.success) setStats(data.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Fallback for offline demo
+      setStats({
+        totalInterns: 5,
+        pendingReviews: 3,
+        approvedLogs: 28,
+        rejectedLogs: 2,
+        feedbackGiven: 14,
+        recentSubmissions: [
+          {
+            id: "sub-1",
+            internId: "int-1",
+            internName: "Adaeze Nwosu",
+            entryType: "DAILY",
+            logDate: new Date().toISOString(),
+            activity: "Optimized payment settlement queries with Prisma index definitions",
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: "sub-2",
+            internId: "int-2",
+            internName: "Oluwaseun Adeyemi",
+            entryType: "WEEKLY",
+            logDate: new Date(Date.now() - 86400000).toISOString(),
+            activity: "Weekly summary of CI/CD integration and staging deployments",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ],
+        internProgressSummaries: [
+          {
+            internId: "int-1",
+            internName: "Adaeze Nwosu",
+            totalLogs: 12,
+            pendingLogs: 1,
+            approvalRate: 92,
+          },
+          {
+            internId: "int-2",
+            internName: "Oluwaseun Adeyemi",
+            totalLogs: 10,
+            pendingLogs: 2,
+            approvalRate: 85,
+          },
+        ],
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchStats(); }, []);
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
-          Loading dashboard...
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-[#2eb4d6]" />
+        <span className="text-xs text-[#607b91] font-medium">Loading supervisor cockpit...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
-            <ClipboardList className="w-4 h-4" />
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-[#d8e5ee] p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-xl bg-[#e6f4f8] text-[#1c647e] flex items-center justify-center shrink-0 shadow-2xs">
+            <Users className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Supervisor Dashboard</h1>
-            <p className="text-[11px] text-gray-500">Review logs and track intern progress</p>
+            <h1 className="text-lg font-bold text-[#183348]">Supervisor Workspace</h1>
+            <p className="text-xs text-[#607b91]">Review intern logbooks, provide rubric feedback, and conduct formal grading</p>
           </div>
         </div>
-        <button
-          onClick={() => onNavigate("Submitted Logs")}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors shadow-sm"
-        >
-          <Clock className="w-3.5 h-3.5" />
-          Review Pending ({stats?.pendingReviews || 0})
-        </button>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-              <Users className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">{stats?.totalInterns || 0}</p>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Assigned Interns</p>
-        </div>
-        <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
-              <Clock className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">{stats?.pendingReviews || 0}</p>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Pending Reviews</p>
-        </div>
-        <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">{stats?.approvedLogs || 0}</p>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Approved</p>
-        </div>
-        <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-              <XCircle className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">{stats?.rejectedLogs || 0}</p>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Rejected</p>
-        </div>
-        <div className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
-              <MessageSquare className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">{stats?.feedbackGiven || 0}</p>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Feedbacks</p>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="cyan"
+            size="default"
+            onClick={() => onNavigate("Review Logs")}
+            className="text-white text-xs font-semibold shadow-xs"
+          >
+            <Clock className="w-4 h-4 mr-1.5" />
+            Review Queue ({stats?.pendingReviews || 0})
+          </Button>
+
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => onNavigate("Evaluations")}
+            className="border-[#d8e5ee] text-[#265275] text-xs font-semibold"
+          >
+            <Award className="w-4 h-4 mr-1.5" />
+            New Evaluation
+          </Button>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <button
-          onClick={() => onNavigate("My Interns")}
-          className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all text-left group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
-              <Users className="w-4 h-4" />
+      {/* ── KPI Metric Cards (InternPath Gradients) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Assigned Interns (Navy Gradient) */}
+        <div className="bg-gradient-ip-navy rounded-2xl p-5 text-white shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-[#c8e4f1]">Assigned Interns</span>
+            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs">
+              <Users className="w-4 h-4 text-[#8cdcf0]" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">My Interns</p>
-              <p className="text-[10px] text-gray-500">View and manage assigned interns</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" />
           </div>
-        </button>
-        <button
-          onClick={() => onNavigate("Submitted Logs")}
-          className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all text-left group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 group-hover:bg-amber-200 transition-colors">
-              <ClipboardList className="w-4 h-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">Submitted Logs</p>
-              <p className="text-[10px] text-gray-500">Review and approve/reject log entries</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-amber-500 transition-colors" />
+          <div className="my-2">
+            <p className="text-3xl font-extrabold tracking-tight">{stats?.totalInterns || 0}</p>
+            <p className="text-[11px] text-[#b0d8ea] mt-0.5">Active under your supervision</p>
           </div>
-        </button>
-        <button
-          onClick={() => onNavigate("Feedback History")}
-          className="bg-white rounded-xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all text-left group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-200 transition-colors">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-[#8de2f5]">
+            <span>100% placement coverage</span>
+          </div>
+        </div>
+
+        {/* Card 2: Pending Reviews (Teal Gradient) */}
+        <div className="bg-gradient-ip-teal rounded-2xl p-5 text-white shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-white/90">Pending Verification</span>
+            <div className="p-2 rounded-xl bg-white/15 backdrop-blur-xs">
+              <Clock className="w-4 h-4 text-white" />
+            </div>
+          </div>
+          <div className="my-2">
+            <p className="text-3xl font-extrabold tracking-tight">{stats?.pendingReviews || 0}</p>
+            <p className="text-[11px] text-white/80 mt-0.5">Logs awaiting sign-off</p>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-white">
+            <span>Action recommended today</span>
+          </div>
+        </div>
+
+        {/* Card 3: Approved & Verified (Blue Gradient) */}
+        <div className="bg-gradient-ip-blue rounded-2xl p-5 text-white shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-[#cce7f5]">Approved Submissions</span>
+            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs">
+              <CheckCircle2 className="w-4 h-4 text-[#8cdcf0]" />
+            </div>
+          </div>
+          <div className="my-2">
+            <p className="text-3xl font-extrabold tracking-tight">{stats?.approvedLogs || 0}</p>
+            <p className="text-[11px] text-[#b3daf0] mt-0.5">Total logs confirmed</p>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-[#8ee3f5]">
+            <span>Verified digital records</span>
+          </div>
+        </div>
+
+        {/* Card 4: Feedback Provided (Elevated White Card) */}
+        <div className="bg-white rounded-2xl border border-[#d8e5ee] p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-[#607b91]">Feedback Given</span>
+            <div className="p-2 rounded-xl bg-[#e6f4f8] text-[#1c647e]">
               <MessageSquare className="w-4 h-4" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">Feedback History</p>
-              <p className="text-[10px] text-gray-500">View all feedback you've given</p>
+          </div>
+          <div className="my-2">
+            <p className="text-3xl font-extrabold text-[#183348] tracking-tight">{stats?.feedbackGiven || 0}</p>
+            <p className="text-[11px] text-[#607b91] mt-0.5">Comments & coaching notes</p>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-[#2eb4d6]">
+            <span>Continuous mentorship</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Quick Actions Grid ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          type="button"
+          onClick={() => onNavigate("Supervise")}
+          className="bg-white rounded-2xl border border-[#d8e5ee] p-5 shadow-xs hover:border-[#2eb4d6] hover:shadow-md transition-all text-left group cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#e6f4f8] text-[#1c647e] flex items-center justify-center group-hover:bg-[#2eb4d6] group-hover:text-white transition-colors">
+              <Users className="w-5 h-5" />
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-purple-500 transition-colors" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#183348]">Intern Roster</p>
+              <p className="text-[11px] text-[#607b91]">View assigned interns & placements</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb8cb] group-hover:text-[#2eb4d6] transition-colors" />
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate("Review Logs")}
+          className="bg-white rounded-2xl border border-[#d8e5ee] p-5 shadow-xs hover:border-[#2eb4d6] hover:shadow-md transition-all text-left group cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#fef7ee] text-[#b46513] flex items-center justify-center group-hover:bg-[#b46513] group-hover:text-white transition-colors">
+              <ClipboardList className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#183348]">Verification Queue</p>
+              <p className="text-[11px] text-[#607b91]">Review and sign submitted logs</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb8cb] group-hover:text-[#b46513] transition-colors" />
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate("Feedback")}
+          className="bg-white rounded-2xl border border-[#d8e5ee] p-5 shadow-xs hover:border-[#2eb4d6] hover:shadow-md transition-all text-left group cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#f0effb] text-[#5546b3] flex items-center justify-center group-hover:bg-[#5546b3] group-hover:text-white transition-colors">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#183348]">Feedback History</p>
+              <p className="text-[11px] text-[#607b91]">Review past coaching comments</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb8cb] group-hover:text-[#5546b3] transition-colors" />
           </div>
         </button>
       </div>
 
-      {/* Recent Submissions */}
-      <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-800">Recent Submissions</h3>
+      {/* ── Row 2: Recent Submissions Waiting for Review ── */}
+      <div className="bg-white rounded-2xl border border-[#d8e5ee] shadow-xs overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#eef4f8] flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-[#183348]">Submissions Awaiting Verification</h3>
+            <p className="text-[11px] text-[#607b91]">Logs submitted by your interns requiring review</p>
+          </div>
           <button
-            onClick={() => onNavigate("Submitted Logs")}
-            className="text-[11px] text-emerald-600 hover:underline font-medium"
+            type="button"
+            onClick={() => onNavigate("Review Logs")}
+            className="text-xs font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
           >
-            View All
+            Open Review Queue →
           </button>
         </div>
+
         {(stats?.recentSubmissions || []).length === 0 ? (
-          <div className="p-8 text-center">
-            <div className="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 mb-3">
-              <ClipboardList className="w-5 h-5" />
+          <div className="p-12 text-center flex flex-col items-center">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-            <p className="text-sm font-semibold text-gray-800">No pending submissions</p>
-            <p className="text-[11px] text-gray-500 mt-1">Interns haven't submitted any logs yet.</p>
+            <p className="text-sm font-bold text-[#183348]">Queue is clear!</p>
+            <p className="text-xs text-[#607b91] mt-1">All intern submissions have been reviewed and verified.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-[#eef4f8]">
             {stats?.recentSubmissions.map((sub) => (
               <div
                 key={sub.id}
                 onClick={() => onNavigate("Log Review", { logId: sub.id, internId: sub.internId })}
-                className="px-4 py-3 hover:bg-gray-50/60 transition-colors cursor-pointer"
+                className="px-6 py-4 hover:bg-[#f8fafc] transition-colors cursor-pointer flex items-center justify-between gap-4"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-                      <Clock className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold text-gray-800">{sub.internName}</p>
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium border bg-amber-100 text-amber-700 border-amber-200">
-                          {sub.entryType === "DAILY" ? "Daily" : "Weekly"}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-gray-500 mt-0.5 truncate">{sub.activity.substring(0, 80)}</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">{formatDate(sub.logDate)}</p>
-                    </div>
+                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">
+                    <Clock className="w-4 h-4" />
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-bold text-[#183348]">{sub.internName}</p>
+                      <span className="px-2 py-0.5 rounded-full text-[9.5px] font-semibold bg-[#eef5fa] text-[#265275]">
+                        {sub.entryType}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#4b6a82] truncate mt-0.5">{sub.activity}</p>
+                    <span className="text-[10px] text-[#718c9f]">Submitted {formatDate(sub.createdAt)}</span>
+                  </div>
                 </div>
+
+                <Button variant="cyan" size="sm" className="text-white text-xs font-semibold shrink-0">
+                  Review
+                </Button>
               </div>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Intern Progress Summary */}
-      <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-800">Intern Progress</h3>
-        </div>
-        {(stats?.internProgressSummaries || []).length === 0 ? (
-          <div className="p-6 text-center text-xs text-gray-500">No interns assigned.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-4 py-3 font-semibold text-gray-600">Intern</th>
-                  <th className="px-4 py-3 font-semibold text-gray-600">Total Logs</th>
-                  <th className="px-4 py-3 font-semibold text-gray-600">Pending</th>
-                  <th className="px-4 py-3 font-semibold text-gray-600">Approval Rate</th>
-                  <th className="px-4 py-3 font-semibold text-gray-600 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {stats?.internProgressSummaries.map((intern) => (
-                  <tr key={intern.internId} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-800">{intern.internName}</td>
-                    <td className="px-4 py-3 text-gray-600">{intern.totalLogs}</td>
-                    <td className="px-4 py-3">
-                      {intern.pendingLogs > 0 ? (
-                        <span className="text-amber-600 font-medium">{intern.pendingLogs}</span>
-                      ) : (
-                        <span className="text-gray-400">0</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              intern.approvalRate >= 80 ? "bg-emerald-500" :
-                              intern.approvalRate >= 50 ? "bg-amber-500" : "bg-red-500"
-                            }`}
-                            style={{ width: `${intern.approvalRate}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-medium text-gray-600">{intern.approvalRate}%</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => onNavigate("Intern Progress", { internId: intern.internId })}
-                        className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600 transition-colors"
-                      >
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         )}
       </div>

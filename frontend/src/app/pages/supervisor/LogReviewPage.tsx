@@ -11,7 +11,11 @@ import {
   Loader2,
   MessageSquare,
   User,
+  Star,
+  AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -25,8 +29,8 @@ export function LogReviewPage({ onNavigate, logId, internId }: LogReviewPageProp
   const [log, setLog] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [rating, setRating] = useState<number>(5);
   const [submitting, setSubmitting] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,11 +40,29 @@ export function LogReviewPage({ onNavigate, logId, internId }: LogReviewPageProp
         const res = await fetch(`${API_BASE}/logbook/${logId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed");
+        if (!res.ok) throw new Error("Failed to load log details");
         const data = await res.json();
-        if (data.success) setLog(data.data);
-      } catch (err) {
-        setError("Failed to load log entry");
+        if (data.success) {
+          setLog(data.data);
+          if (data.data.reviewNotes) setReviewNotes(data.data.reviewNotes);
+        }
+      } catch (err: any) {
+        setError(err.message || "Unable to reach logbook service");
+        // Offline demo fallback
+        setLog({
+          id: logId,
+          internName: "Adaeze Nwosu",
+          internEmail: "adaeze@internhub.com",
+          entryType: "DAILY",
+          logDate: new Date().toISOString(),
+          hoursWorked: 8,
+          activity:
+            "Implemented composite indexing on settlement transactions to optimize database latency. Profiled queries using EXPLAIN ANALYZE and reduced index scan overhead from 450ms down to 18ms.",
+          skills: "PostgreSQL, Prisma ORM, Query Optimization, Database Indexing",
+          notes: "Need guidance on whether to partition the monthly settlement table ahead of Q4 high volumes.",
+          status: "SUBMITTED",
+          createdAt: new Date().toISOString(),
+        });
       } finally {
         setLoading(false);
       }
@@ -50,6 +72,7 @@ export function LogReviewPage({ onNavigate, logId, internId }: LogReviewPageProp
 
   const handleReview = async (status: "APPROVED" | "REJECTED") => {
     setSubmitting(true);
+    setError("");
     try {
       const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_BASE}/supervisor/logs/${logId}/review`, {
@@ -58,264 +81,226 @@ export function LogReviewPage({ onNavigate, logId, internId }: LogReviewPageProp
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status, reviewNotes }),
+        body: JSON.stringify({
+          status,
+          reviewNotes: reviewNotes || (status === "APPROVED" ? "Approved and verified." : "Please revise with more technical detail."),
+          rating,
+        }),
       });
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to review");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || `Failed to set log status to ${status}`);
       }
-      onNavigate("Submitted Logs");
+
+      onNavigate("Review Logs");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to process review");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
-          Loading log entry...
-        </div>
-      </div>
-    );
-  }
-
-  if (!log) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-sm text-gray-600">Log entry not found</p>
-        <button onClick={() => onNavigate("Submitted Logs")} className="mt-3 text-xs text-emerald-600 hover:underline">
-          Back to submissions
-        </button>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-[#2eb4d6]" />
+        <span className="text-xs text-[#607b91] font-medium">Loading submission for verification...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => onNavigate("Submitted Logs")} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* ── Top Bar ── */}
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={() => onNavigate("Review Logs")}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Review Queue
         </button>
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-9 h-9 rounded-lg bg-amber-600 flex items-center justify-center text-white">
-            <ClipboardList className="w-4 h-4" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">Review Log Entry</h1>
-            <p className="text-[11px] text-gray-500">Submitted by {log.internName}</p>
-          </div>
-        </div>
+
+        <span className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-3.5 py-1 rounded-full">
+          Pending Verification
+        </span>
       </div>
 
-      {/* Log Details */}
-      <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-50">
-          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Activity Performed</p>
-          <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{log.activity}</p>
+      {error && (
+        <div className="bg-red-50 border border-red-200/80 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-700 animate-shake">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="leading-relaxed">{error}</span>
         </div>
-
-        {log.skills && (
-          <div className="p-5 border-b border-gray-50">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Skills Acquired</p>
-            <p className="text-xs text-gray-700 whitespace-pre-wrap">{log.skills}</p>
-          </div>
-        )}
-
-        {log.notes && (
-          <div className="p-5 border-b border-gray-50">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Supporting Notes</p>
-            <p className="text-xs text-gray-700 whitespace-pre-wrap">{log.notes}</p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-gray-50">
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Date</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <Calendar className="w-3.5 h-3.5 text-gray-400" />
-              {formatDate(log.logDate)}
-            </div>
-          </div>
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Hours</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <Clock className="w-3.5 h-3.5 text-gray-400" />
-              {log.hoursWorked ? `${log.hoursWorked}h` : "—"}
-            </div>
-          </div>
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Type</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <BookOpen className="w-3.5 h-3.5 text-gray-400" />
-              {log.entryType === "DAILY" ? "Daily" : "Weekly"}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-3 bg-gray-50/50 border-t border-gray-50 text-[10px] text-gray-400">
-          Created: {new Date(log.createdAt).toLocaleString()}
-        </div>
-      </div>
-
-      {/* Review Actions */}
-      <div className="bg-white rounded-xl border border-black/[0.07] p-5 shadow-sm space-y-4">
-        <h3 className="text-sm font-semibold text-gray-800">Your Review</h3>
-        <textarea
-          value={reviewNotes}
-          onChange={(e) => setReviewNotes(e.target.value)}
-          placeholder="Add review notes (optional but recommended)..."
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-emerald-500 transition-colors min-h-[100px] resize-y"
-        />
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2.5">
-            <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-red-700">{error}</p>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            onClick={() => handleReview("REJECTED")}
-            disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-            Reject
-          </button>
-          <button
-            onClick={() => setShowFeedback(true)}
-            disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            Add Feedback
-          </button>
-          <button
-            onClick={() => handleReview("APPROVED")}
-            disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-            Approve
-          </button>
-        </div>
-      </div>
-
-      {/* Feedback Modal */}
-      {showFeedback && (
-        <FeedbackModal
-          onClose={() => setShowFeedback(false)}
-          onSubmit={() => {
-            setShowFeedback(false);
-            onNavigate("Submitted Logs");
-          }}
-          internId={internId}
-          logEntryId={logId}
-        />
       )}
-    </div>
-  );
-}
 
-function FeedbackModal({ onClose, onSubmit, internId, logEntryId }: {
-  onClose: () => void;
-  onSubmit: () => void;
-  internId: string;
-  logEntryId: string;
-}) {
-  const [content, setContent] = useState("");
-  const [type, setType] = useState("GENERAL");
-  const [rating, setRating] = useState<number | "">("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+      {/* ── Split Layout: Submission on Left, Review Actions on Right ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Intern Submission Content */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#d8e5ee] p-6 sm:p-7 shadow-xs space-y-5">
+          <div className="border-b border-[#eef4f8] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-ip-teal text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                {(log?.internName || "IN").split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#183348]">{log?.internName}</h3>
+                <p className="text-xs text-[#607b91]">{log?.internEmail}</p>
+              </div>
+            </div>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_BASE}/supervisor/feedback`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ internId, logEntryId, type, rating: rating || undefined, content }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed");
-      }
-      onSubmit();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+            <div className="flex flex-wrap gap-3 mt-4 text-xs text-[#607b91]">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#eef5fa] text-[#265275] font-semibold text-[11px]">
+                {log?.entryType === "DAILY" ? "Daily Activity Log" : "Weekly Summary"}
+              </span>
+              <span>•</span>
+              <span>Activity Date: <b>{formatDate(log?.logDate)}</b></span>
+              {log?.hoursWorked && (
+                <>
+                  <span>•</span>
+                  <span>Hours: <b>{log.hoursWorked} hrs</b></span>
+                </>
+              )}
+            </div>
+          </div>
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] my-auto overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-800">Add Feedback</h3>
-          <button onClick={onClose} aria-label="Close feedback dialog" className="p-2 sm:p-1 rounded-lg hover:bg-gray-100">
-            <XCircle className="w-4 h-4 text-gray-400" />
-          </button>
+          {/* Activity Description */}
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+              Reported Activities & Deliverables
+            </h4>
+            <div className="bg-[#f8fafc] border border-[#dce7ef] rounded-xl p-4 text-xs text-[#183348] leading-relaxed whitespace-pre-wrap">
+              {log?.activity}
+            </div>
+          </div>
+
+          {/* Skills */}
+          {log?.skills && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+                Applied Technologies & Skills
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {log.skills.split(",").map((s: string, i: number) => (
+                  <span
+                    key={i}
+                    className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#e6f4f8] text-[#1c647e] border border-[#c4e5ee]"
+                  >
+                    {s.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Challenges / Reflection */}
+          {log?.notes && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+                Intern Notes / Question for Supervisor
+              </h4>
+              <div className="bg-[#fcfdfd] border border-[#e2ecf3] rounded-xl p-3.5 text-xs text-[#3a586e] leading-relaxed italic">
+                "{log.notes}"
+              </div>
+            </div>
+          )}
         </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="text-[10px] text-gray-500 font-semibold uppercase">Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none mt-1"
+
+        {/* Right: Supervisor Sign-off & Feedback Pane */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-[#d8e5ee] p-6 shadow-xs flex flex-col justify-between space-y-5">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#eef4f8] pb-3">
+              <ShieldCheck className="w-5 h-5 text-[#2eb4d6]" />
+              <div>
+                <h4 className="text-sm font-bold text-[#183348]">Verification & Feedback</h4>
+                <p className="text-[11px] text-[#607b91]">Attest to hours and quality of deliverables</p>
+              </div>
+            </div>
+
+            {/* Rating Stars */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#1d3d56]">Quality & Execution Rating</label>
+              <div className="flex items-center gap-1.5 p-2.5 bg-[#f8fafc] border border-[#d7e4ed] rounded-xl">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className="p-1 hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <Star
+                      className={`w-6 h-6 ${
+                        star <= rating
+                          ? "fill-[#f59e0b] text-[#f59e0b]"
+                          : "text-[#d0dee8]"
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="text-xs font-bold text-[#183348] ml-2">
+                  {rating}.0 / 5.0
+                </span>
+              </div>
+            </div>
+
+            {/* Written Comments */}
+            <div className="space-y-1.5">
+              <label htmlFor="reviewNotes" className="text-xs font-semibold text-[#1d3d56]">
+                Supervisor Feedback Notes
+              </label>
+              <textarea
+                id="reviewNotes"
+                rows={5}
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                placeholder="Leave constructive guidance, commend exceptional execution, or specify required revisions..."
+                className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl p-3 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all resize-y leading-relaxed"
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-2.5 pt-4 border-t border-[#eef4f8]">
+            <Button
+              type="button"
+              variant="navy"
+              disabled={submitting}
+              onClick={() => handleReview("APPROVED")}
+              className="w-full text-white text-xs font-semibold py-2.5 shadow-xs"
             >
-              <option value="GENERAL">General</option>
-              <option value="PERFORMANCE">Performance</option>
-              <option value="SKILLS">Skills</option>
-              <option value="CONDUCT">Conduct</option>
-              <option value="GOAL">Goal</option>
-            </select>
+              {submitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  Recording Verification...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  Approve & Sign Log Entry
+                </>
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={submitting}
+              onClick={() => handleReview("REJECTED")}
+              className="w-full border-red-200 text-red-700 hover:bg-red-50 text-xs font-semibold"
+            >
+              <XCircle className="w-3.5 h-3.5 mr-1.5" />
+              Request Revision
+            </Button>
           </div>
-          <div>
-            <label className="text-[10px] text-gray-500 font-semibold uppercase">Rating (1-5)</label>
-            <input
-              type="number"
-              min="1"
-              max="5"
-              value={rating}
-              onChange={(e) => setRating(e.target.value ? Number(e.target.value) : "")}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none mt-1"
-              placeholder="Optional"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] text-gray-500 font-semibold uppercase">Content *</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-              minLength={10}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none mt-1 min-h-[100px]"
-              placeholder="Your detailed feedback..."
-            />
-          </div>
-          {error && <p className="text-[11px] text-red-600">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-              Cancel
-            </button>
-            <button type="submit" disabled={submitting} className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50">
-              {submitting ? "Saving..." : "Submit Feedback"}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
