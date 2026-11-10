@@ -13,7 +13,9 @@ import {
   Loader2,
   User,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -56,14 +58,14 @@ export function LogDetailPage({ onNavigate, logId }: LogDetailPageProps) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch log entry");
+      if (!res.ok) throw new Error("Failed to fetch log entry details");
 
       const data = await res.json();
       if (data.success) {
         setEntry(data.data);
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to load log detail");
     } finally {
       setLoading(false);
     }
@@ -74,260 +76,284 @@ export function LogDetailPage({ onNavigate, logId }: LogDetailPageProps) {
   }, [logId]);
 
   const handleSubmit = async () => {
-    if (!confirm("Submit this log entry for review? You won't be able to edit it afterward.")) return;
     setSubmitting(true);
+    setError("");
     try {
       const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_BASE}/logbook/${logId}/submit`, {
-        method: "PATCH",
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to submit");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to submit log entry");
       }
-      onNavigate("Logbook");
+
+      fetchEntry();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to submit for approval");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this log entry? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete this log entry? This cannot be undone.")) return;
+
     setDeleting(true);
+    setError("");
     try {
       const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_BASE}/logbook/${logId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to delete");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete log entry");
       }
+
       onNavigate("Logbook");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to delete log entry");
     } finally {
       setDeleting(false);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "DRAFT":
+        return "bg-[#edf3f7] text-[#4e6c82] border-[#d4e2eb]";
+      case "SUBMITTED":
+        return "bg-amber-50 text-amber-700 border-amber-200";
+      case "APPROVED":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "REJECTED":
+        return "bg-red-50 text-red-700 border-red-200";
+      default:
+        return "bg-[#edf3f7] text-[#4e6c82] border-[#d4e2eb]";
+    }
   };
 
-  const formatDateTime = (dateStr: string) => {
+  const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
-          Loading entry details...
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-[#2eb4d6]" />
+        <span className="text-xs text-[#607b91] font-medium">Loading log entry details...</span>
       </div>
     );
   }
 
   if (!entry) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-20">
-        <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-3" />
-        <p className="text-sm font-semibold text-gray-800">Entry not found</p>
-        <p className="text-xs text-gray-500 mt-1">{error || "The log entry could not be found."}</p>
-        <button
-          onClick={() => onNavigate("Logbook")}
-          className="mt-4 text-xs text-emerald-600 hover:underline font-medium"
-        >
-          Back to Logbook
-        </button>
+      <div className="bg-white rounded-2xl border border-[#d8e5ee] p-12 text-center max-w-md mx-auto space-y-3">
+        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h3 className="text-sm font-bold text-[#183348]">Entry Not Found</h3>
+        <p className="text-xs text-[#607b91]">This log entry could not be located or may have been deleted.</p>
+        <Button variant="outline" size="sm" onClick={() => onNavigate("Logbook")}>
+          Return to Logbook
+        </Button>
       </div>
     );
   }
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case "DRAFT":
-        return { icon: FileText, color: "text-gray-600", bg: "bg-gray-100", border: "border-gray-200", label: "Draft" };
-      case "SUBMITTED":
-        return { icon: Clock, color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-200", label: "Submitted" };
-      case "APPROVED":
-        return { icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-100", border: "border-emerald-200", label: "Approved" };
-      case "REJECTED":
-        return { icon: XCircle, color: "text-red-700", bg: "bg-red-100", border: "border-red-200", label: "Rejected" };
-      default:
-        return { icon: FileText, color: "text-gray-600", bg: "bg-gray-100", border: "border-gray-200", label: status };
-    }
-  };
-
-  const statusConfig = getStatusConfig(entry.status);
-  const StatusIcon = statusConfig.icon;
-
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <button
-            onClick={() => onNavigate("Logbook")}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${statusConfig.bg}`}>
-              <StatusIcon className={`w-4 h-4 ${statusConfig.color}`} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-800">{entry.entryType === "DAILY" ? "Daily" : "Weekly"} Activity Log</h1>
-              <p className="text-[11px] text-gray-500">{formatDate(entry.logDate)}</p>
-            </div>
-          </div>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${statusConfig.border} ${statusConfig.bg} ${statusConfig.color}`}>
-          <StatusIcon className="w-3.5 h-3.5" />
-          {statusConfig.label}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* ── Top Bar ── */}
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={() => onNavigate("Logbook")}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Logbook
+        </button>
+
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadge(
+            entry.status
+          )}`}
+        >
+          {entry.status}
         </span>
       </div>
 
-      {/* Main Content */}
-      <div className="bg-white rounded-xl border border-black/[0.07] shadow-sm overflow-hidden">
-        {/* Activity */}
-        <div className="p-5 border-b border-gray-50">
-          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Activity Performed</p>
-          <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{entry.activity}</p>
+      {error && (
+        <div className="bg-red-50 border border-red-200/80 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-700 animate-shake">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="leading-relaxed">{error}</span>
+        </div>
+      )}
+
+      {/* ── Main Detail Card ── */}
+      <div className="bg-white rounded-2xl border border-[#d8e5ee] p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-bold text-[#2eb4d6] uppercase tracking-wider">
+              {entry.entryType === "DAILY" ? "Daily Activity Record" : "Weekly Summary"}
+            </span>
+          </div>
+          <h2 className="text-xl font-bold text-[#183348]">{formatDate(entry.logDate)}</h2>
         </div>
 
-        {/* Skills */}
+        {/* ── Metadata Grid ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#f8fafc] border border-[#e4ecf2] rounded-xl p-4 text-xs">
+          <div>
+            <span className="text-[10px] uppercase font-bold text-[#718c9f] tracking-wide">Date</span>
+            <p className="font-semibold text-[#183348] mt-0.5">{formatDate(entry.logDate)}</p>
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold text-[#718c9f] tracking-wide">Hours</span>
+            <p className="font-semibold text-[#183348] mt-0.5">{entry.hoursWorked ? `${entry.hoursWorked} hrs` : "N/A"}</p>
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold text-[#718c9f] tracking-wide">Type</span>
+            <p className="font-semibold text-[#183348] mt-0.5">{entry.entryType}</p>
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold text-[#718c9f] tracking-wide">Recorded</span>
+            <p className="font-semibold text-[#183348] mt-0.5">{formatDate(entry.createdAt)}</p>
+          </div>
+        </div>
+
+        {/* ── Activity Narrative ── */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+            Activity Description
+          </h4>
+          <div className="bg-[#fcfdfd] border border-[#e6edf2] rounded-xl p-4 text-xs text-[#26445c] leading-relaxed whitespace-pre-wrap">
+            {entry.activity}
+          </div>
+        </div>
+
+        {/* ── Skills & Technologies ── */}
         {entry.skills && (
-          <div className="p-5 border-b border-gray-50">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Skills Acquired</p>
-            <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{entry.skills}</p>
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+              Applied Skills & Technologies
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {entry.skills.split(",").map((skill, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1 rounded-full text-[11px] font-semibold bg-[#e6f4f8] text-[#1c647e] border border-[#c6e5ee]"
+                >
+                  {skill.trim()}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Notes */}
+        {/* ── Reflections & Notes ── */}
         {entry.notes && (
-          <div className="p-5 border-b border-gray-50">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Supporting Notes</p>
-            <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{entry.notes}</p>
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#4d6f88]">
+              Challenges & Reflections
+            </h4>
+            <div className="bg-[#fcfdfd] border border-[#e6edf2] rounded-xl p-4 text-xs text-[#3f5c72] leading-relaxed whitespace-pre-wrap">
+              {entry.notes}
+            </div>
           </div>
         )}
 
-        {/* Meta Info Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-gray-50">
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Date</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <Calendar className="w-3.5 h-3.5 text-gray-400" />
-              {formatDate(entry.logDate)}
+        {/* ── Supervisor Review Card (If reviewed) ── */}
+        {entry.reviewedAt && (
+          <div className="bg-[#eef8fc] border border-[#bfe1ef] rounded-2xl p-5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#2eb4d6]" />
+                <span className="text-xs font-bold text-[#183348]">
+                  Reviewed by {entry.reviewerName || "Supervisor"}
+                </span>
+              </div>
+              <span className="text-[10px] text-[#607b91]">
+                {formatDate(entry.reviewedAt)}
+              </span>
             </div>
+            {entry.reviewNotes ? (
+              <p className="text-xs text-[#234d67] leading-relaxed bg-white/70 p-3 rounded-xl border border-[#cfe7f3]">
+                "{entry.reviewNotes}"
+              </p>
+            ) : (
+              <p className="text-xs text-[#4b728b] italic">No written comments attached with approval.</p>
+            )}
           </div>
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Hours</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <Clock className="w-3.5 h-3.5 text-gray-400" />
-              {entry.hoursWorked ? `${entry.hoursWorked}h` : "—"}
-            </div>
-          </div>
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Type</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <BookOpen className="w-3.5 h-3.5 text-gray-400" />
-              {entry.entryType === "DAILY" ? "Daily" : "Weekly"}
-            </div>
-          </div>
-          <div className="bg-white p-4">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">Intern</p>
-            <div className="flex items-center gap-1.5 text-xs text-gray-700">
-              <User className="w-3.5 h-3.5 text-gray-400" />
-              {entry.internName || "—"}
-            </div>
-          </div>
-        </div>
+        )}
 
-        {/* Timestamps */}
-        <div className="px-4 py-3 bg-gray-50/50 border-t border-gray-50 flex flex-wrap gap-x-6 gap-y-1 text-[10px] text-gray-400">
-          <span>Created: {formatDateTime(entry.createdAt)}</span>
-          <span>Updated: {formatDateTime(entry.updatedAt)}</span>
-          {entry.reviewedAt && <span>Reviewed: {formatDateTime(entry.reviewedAt)}</span>}
+        {/* ── Action Buttons ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#eef4f8]">
+          {/* Destructive Delete for Drafts */}
+          {entry.status === "DRAFT" ? (
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={handleDelete}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+            >
+              {deleting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+              Delete Draft
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-2.5">
+            {(entry.status === "DRAFT" || entry.status === "REJECTED") && (
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => onNavigate("Edit Log", { logId: entry.id })}
+                className="border-[#d8e5ee] text-[#265275] text-xs font-semibold"
+              >
+                <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                Edit Details
+              </Button>
+            )}
+
+            {entry.status === "DRAFT" && (
+              <Button
+                variant="navy"
+                size="default"
+                disabled={submitting}
+                onClick={handleSubmit}
+                className="text-white text-xs font-semibold shadow-xs"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5 mr-1.5" />
+                    Submit for Approval
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Review Section */}
-      {(entry.status === "APPROVED" || entry.status === "REJECTED") && (
-        <div className={`rounded-xl border p-5 shadow-sm ${
-          entry.status === "APPROVED"
-            ? "bg-emerald-50 border-emerald-200"
-            : "bg-red-50 border-red-200"
-        }`}>
-          <div className="flex items-center gap-2 mb-3">
-            {entry.status === "APPROVED"
-              ? <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              : <XCircle className="w-5 h-5 text-red-600" />
-            }
-            <div>
-              <p className="text-sm font-semibold text-gray-800">
-                {entry.status === "APPROVED" ? "Approved" : "Rejected"}
-              </p>
-              {entry.reviewerName && (
-                <p className="text-[11px] text-gray-500">by {entry.reviewerName}</p>
-              )}
-            </div>
-          </div>
-          {entry.reviewNotes && (
-            <p className="text-xs text-gray-700 bg-white/80 rounded-lg p-3 border border-inherit">
-              {entry.reviewNotes}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Actions (only for DRAFT logs) */}
-      {entry.status === "DRAFT" && (
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-          >
-            {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-            Delete
-          </button>
-          <button
-            onClick={() => onNavigate("Edit Log", { logId: entry.id })}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            Edit Draft
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            Submit for Review
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-red-700">{error}</p>
-        </div>
-      )}
     </div>
   );
 }
