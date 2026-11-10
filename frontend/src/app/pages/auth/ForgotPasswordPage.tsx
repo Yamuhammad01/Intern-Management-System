@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../../components/AuthContext";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, ArrowLeft, Mail } from "lucide-react";
+import { LogoIcon } from "../../components/brand/Logo";
+import { Button } from "../../components/ui/button";
 
 interface ForgotPasswordPageProps {
   onNavigate: (page: "welcome" | "login" | "register") => void;
@@ -28,8 +30,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
     try {
       await forgotPassword(email);
       setSuccess(true);
-      
-      // In mock mode, generate a fake token link in the console and auto-setup the token for the user to bypass easily
+
       if (isMockMode) {
         const fakeToken = "mock-reset-token-xyz-" + Date.now();
         console.log(`[MOCK] Reset token generated: ${fakeToken}`);
@@ -44,106 +45,100 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
 
   return (
     <div className="flex flex-col w-full">
-      {/* SVG Icon */}
-      <div className="flex justify-center mb-6">
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 0C34.1503 0 44 9.84974 44 22C44 34.1503 34.1503 44 22 44C9.84974 44 0 34.1503 0 22C0 9.84974 9.84974 0 22 0Z" fill="#10b981" fillOpacity="0.08"/>
-          <path d="M15 25V19C15 15.134 18.134 12 22 12C25.866 12 29 15.134 29 19V25M12 22H32M22 28V32" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="22" cy="22" r="3.5" stroke="#10b981" strokeWidth="2.5" fill="#f8fafc" />
-        </svg>
-      </div>
-
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold tracking-tight text-[#111827]">
-          Forgot Password
+      {/* Brand Icon Header */}
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="w-12 h-12 rounded-xl bg-[#e6f4f8] flex items-center justify-center mb-3 shadow-2xs">
+          <LogoIcon size={30} />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight text-[#183348]">
+          Reset Your Password
         </h2>
-        <p className="text-xs text-gray-500 mt-1 leading-snug">
-          Enter your email address and we'll send you a link to reset your account password
+        <p className="text-xs text-[#607b91] mt-1 leading-snug">
+          Enter your registered email address to receive password recovery instructions
         </p>
       </div>
 
+      {/* Success Notification */}
       {success ? (
-        <div className="flex flex-col items-center gap-4 bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-center text-xs text-emerald-800">
-          <CheckCircle className="w-8 h-8 text-emerald-500 shrink-0" />
-          <div>
-            <p className="font-semibold text-sm mb-1">Reset Link Sent!</p>
-            <p className="leading-relaxed">
-              If an account is associated with <b>{email}</b>, we have sent instructions to reset your password.
-            </p>
-            {isMockMode && (
-              <div className="mt-4 p-2.5 bg-emerald-100/50 rounded-xl border border-emerald-200/50 text-[10.5px]">
-                <p className="font-semibold mb-1">Demo Shortcut:</p>
-                <button
-                  type="button"
-                  onClick={() => onNavigate("welcome")} // parent will trigger reset password screen
-                  className="font-bold text-emerald-700 underline hover:text-emerald-800 transition-colors"
-                >
-                  Click here to proceed to the Reset Password screen
-                </button>
-              </div>
-            )}
+        <div className="flex flex-col items-center gap-3 bg-[#eefafc] border border-[#bfe7f3] rounded-2xl p-5 text-center text-xs text-[#1a5b75] animate-fade-in">
+          <div className="w-10 h-10 rounded-full bg-[#d2f3fa] flex items-center justify-center text-[#248da9]">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
-          <button
-            type="button"
+          <div>
+            <p className="font-bold text-sm text-[#18485d] mb-1">Reset Instructions Sent</p>
+            <p className="text-[11.5px] text-[#4b7a8f] leading-relaxed">
+              If an account matches <b>{email}</b>, you will receive password reset instructions.
+            </p>
+          </div>
+          <Button
+            variant="cyan"
+            size="sm"
             onClick={() => onNavigate("login")}
-            className="mt-2 w-full border border-emerald-200 hover:bg-emerald-100/30 text-emerald-700 font-semibold py-2.5 rounded-xl transition-all"
+            className="mt-2 text-white font-medium"
           >
-            Back to Login
-          </button>
+            Return to Sign In
+          </Button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Errors display */}
+        <>
+          {/* Errors Display */}
           {(localError || error) && (
-            <div className="bg-red-50 border border-red-100 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700">
+            <div className="mb-4 bg-red-50 border border-red-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{localError || error}</span>
+              <span className="leading-relaxed">{localError || error}</span>
             </div>
           )}
 
-          {/* Email Address */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11.5px] font-semibold text-gray-700" htmlFor="email">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. sarah.johnson@email.com"
-              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-3 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-            />
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1d3d56]" htmlFor="email">
+                Registered Email Address
+              </label>
+              <div className="relative flex items-center">
+                <Mail className="w-4 h-4 text-[#8aa3b5] absolute left-3.5 pointer-events-none" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. sarah.johnson@company.com"
+                  className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all duration-150"
+                />
+              </div>
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold py-3 rounded-xl transition-all duration-200 mt-2 flex items-center justify-center gap-2 hover:translate-y-[-1px] disabled:opacity-75 disabled:pointer-events-none"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Sending link...
-              </>
-            ) : (
-              "Send Reset Link"
-            )}
-          </button>
-
-          {/* Back to login navigation */}
-          <div className="text-center mt-6">
-            <button
-              type="button"
-              onClick={() => onNavigate("login")}
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+            <Button
+              type="submit"
+              variant="navy"
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full text-white text-[13.5px] font-semibold mt-2 shadow-xs"
             >
-              Back to Login
-            </button>
-          </div>
-        </form>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending Link...
+                </>
+              ) : (
+                "Send Password Reset Link"
+              )}
+            </Button>
+          </form>
+        </>
       )}
+
+      {/* Footer Navigation */}
+      <div className="flex flex-col items-center gap-2.5 mt-6 pt-5 border-t border-[#e5edf3] text-xs text-[#638096]">
+        <button
+          type="button"
+          onClick={() => onNavigate("login")}
+          className="inline-flex items-center gap-1.5 font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Sign In
+        </button>
+      </div>
     </div>
   );
 };

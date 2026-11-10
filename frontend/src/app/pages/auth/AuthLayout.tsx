@@ -1,6 +1,8 @@
 import React from "react";
-import { Briefcase } from "lucide-react";
 import { useAuth } from "../../components/AuthContext";
+import { Logo } from "../../components/brand/Logo";
+import { BRAND_CONFIG } from "../../components/brand/BrandConfig";
+import { CheckCircle2, ShieldCheck, Sparkles, Building2, TrendingUp } from "lucide-react";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -10,152 +12,132 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const { isMockMode } = useAuth();
 
   return (
-    <div className="min-h-screen app-min-viewport-height w-full flex bg-white text-[#111827] overflow-hidden relative" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-      
+    <div
+      className="min-h-screen app-min-viewport-height w-full flex bg-[#f4f7fa] text-[#183348] overflow-hidden relative"
+      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+    >
       {/* Mock Mode Banner */}
       {isMockMode && (
-        <div className="absolute top-3 right-4 z-50 flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-[11px] font-medium text-amber-800 shadow-sm animate-pulse">
-          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-          Running in Demo/Mock Mode (Backend Offline)
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-amber-50/95 border border-amber-300/80 backdrop-blur-xs rounded-full px-3.5 py-1 text-[11px] font-medium text-amber-900 shadow-sm animate-pulse">
+          <span className="w-2 h-2 bg-amber-500 rounded-full shrink-0"></span>
+          Running in Demo / Mock Mode (Backend Offline)
         </div>
       )}
 
-      {/* Left Panel: Welcome Showcase */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0f2d1e] text-white flex-col justify-between p-12 relative overflow-hidden select-none">
-        
-        {/* SVG Textured Background Overlay */}
-        <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <filter id="noiseFilter">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+      {/* Left Panel: Enterprise Showcase */}
+      <div className="hidden lg:flex lg:w-1/2 bg-sidebar-gradient text-white flex-col justify-between p-10 xl:p-14 relative overflow-hidden select-none">
+        {/* Subtle Ambient Glows matching the InternPath Palette */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#2eb4d6]/20 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/3 -right-20 w-80 h-80 rounded-full bg-[#52bdd5]/15 blur-[90px] pointer-events-none" />
+        <div className="absolute -bottom-20 -left-10 w-80 h-80 rounded-full bg-[#1e425e]/40 blur-[80px] pointer-events-none" />
+
+        {/* Translucent Fluid Shapes (inspired by reference image sidebar bottom) */}
+        <div className="absolute -bottom-16 -left-16 w-80 h-80 pointer-events-none opacity-40">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fill="#2eb4d6"
+              d="M38.8,-53.4C50.2,-44.6,59.3,-33.5,63.9,-20.3C68.6,-7.1,68.7,8.2,63.8,21.9C58.8,35.6,48.8,47.8,36.2,56.5C23.5,65.3,8.2,70.6,-5.9,68.6C-20,66.5,-32.9,57,-44.6,46.1C-56.3,35.2,-66.8,22.8,-69.4,8.7C-72.1,-5.5,-66.9,-21.4,-57.4,-32.9C-47.8,-44.3,-33.9,-51.4,-20.5,-58.8C-7.1,-66.2,5.7,-74,18.4,-70.6C31.1,-67.2,27.4,-62.2,38.8,-53.4Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+        </div>
+        <div className="absolute -bottom-10 left-20 w-72 h-72 pointer-events-none opacity-30">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fill="#82d8eb"
+              d="M44.7,-60.2C56.6,-52.7,64,-38.9,67.6,-24.3C71.2,-9.7,70.9,5.7,65.8,19.3C60.6,33,50.6,44.9,38.3,53.2C26,61.5,11.4,66.2,-2.7,69.9C-16.7,73.6,-30.2,76.2,-41.8,69.7C-53.4,63.2,-63.1,47.6,-68.2,31.2C-73.4,14.8,-74,-2.4,-68.9,-17.4C-63.7,-32.4,-52.8,-45.2,-40.1,-52.5C-27.4,-59.8,-13.7,-61.6,1.2,-63.2C16.1,-64.8,32.8,-67.7,44.7,-60.2Z"
+              transform="translate(100 100)"
+            />
           </svg>
         </div>
 
-        {/* Abstract Green Glows for visual depth */}
-        <div className="absolute top-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-emerald-600/20 blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-1/4 -right-1/4 w-[400px] h-[400px] rounded-full bg-teal-500/10 blur-[100px] pointer-events-none"></div>
-
         {/* Header Logo */}
-        <div className="flex items-center gap-2.5 z-10">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-950/20">
-            <Briefcase className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-semibold text-lg tracking-tight">InternHub</span>
+        <div className="z-10 flex items-center justify-between">
+          <Logo variant="white" size={38} />
+          <span className="text-[11px] font-semibold text-[#bfeaf5] bg-white/10 px-3 py-1 rounded-full border border-white/10 backdrop-blur-xs">
+            Commercial Portal
+          </span>
         </div>
 
-        {/* Main Content & Illustration */}
-        <div className="my-auto flex flex-col items-center text-center z-10 max-w-lg mx-auto">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight leading-tight mb-3">
-            Welcome to InternHub
+        {/* Center Showcase Content */}
+        <div className="my-auto z-10 max-w-lg">
+          <div className="inline-flex items-center gap-2 bg-[#2eb4d6]/20 border border-[#2eb4d6]/30 text-[#d4f4fb] px-3.5 py-1.5 rounded-full text-xs font-medium mb-5">
+            <Sparkles className="w-3.5 h-3.5 text-[#2eb4d6]" />
+            Enterprise Internship Management
+          </div>
+
+          <h1 className="text-3xl xl:text-4xl font-bold tracking-tight leading-tight text-white mb-4">
+            Transform Talent Placements into High-Impact Outcomes
           </h1>
-          <p className="text-sm text-emerald-200/80 leading-relaxed mb-12">
-            Manage your internship programs smarter, faster, and easier — all in one place
+          <p className="text-sm text-[#c8e6f3] leading-relaxed mb-8">
+            A cohesive platform for host enterprises, academic supervisors, and student interns.
+            Coordinate verifiable logbooks, rubric evaluations, and real-time progress.
           </p>
 
-          {/* Premium Interactive SVG Illustration representing the original photo concept */}
-          <div className="relative w-64 h-64 flex items-center justify-center">
-            {/* Background Circle Halo */}
-            <div className="absolute w-52 h-52 rounded-full border border-emerald-500/20 bg-emerald-950/20 flex items-center justify-center animate-spin-slow">
-              <div className="w-44 h-44 rounded-full border border-dashed border-emerald-400/15"></div>
+          {/* Metric Showcase Cards inspired by InternPath design */}
+          <div className="grid grid-cols-2 gap-3.5">
+            <div className="bg-gradient-ip-navy p-4 rounded-xl border border-white/10 shadow-sm">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-medium text-[#c8e4f1]">Openings</span>
+                <Building2 className="w-4 h-4 text-[#8cdcf0]" />
+              </div>
+              <p className="text-2xl font-bold text-white tracking-tight">240+</p>
+              <p className="text-[10.5px] text-[#b0d8ea] mt-0.5">Enterprise Roles Active</p>
             </div>
-            
-            {/* Interactive Illustration */}
-            <svg viewBox="0 0 200 200" className="w-56 h-56 relative z-10 transition-transform duration-500 hover:scale-105">
-              {/* Textured background texture map inside illustration */}
-              <defs>
-                <linearGradient id="paperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="100%" stopColor="#e2e8f0" />
-                </linearGradient>
-                <linearGradient id="suitGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stopColor="#08150f" />
-                  <stop offset="100%" stopColor="#1e3e2c" />
-                </linearGradient>
-              </defs>
 
-              {/* Dotted target lines */}
-              <circle cx="100" cy="80" r="48" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3 3" className="opacity-30" />
+            <div className="bg-gradient-ip-teal p-4 rounded-xl border border-white/10 shadow-sm">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-medium text-white/90">Placements</span>
+                <TrendingUp className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-2xl font-bold text-white tracking-tight">17K+</p>
+              <p className="text-[10.5px] text-white/80 mt-0.5">Certified Track Record</p>
+            </div>
+          </div>
 
-              {/* Paper cutout person */}
-              <g className="animate-float">
-                {/* Head */}
-                <circle cx="100" cy="50" r="14" fill="url(#paperGrad)" className="shadow-lg" />
-                {/* Body / Arms / Legs */}
-                <path d="M72 82 C72 74, 82 72, 100 72 C118 72, 128 74, 128 82 C128 86, 122 88, 118 90 L118 108 C118 116, 112 118, 112 128 L112 136 C112 138, 108 140, 106 140 C104 140, 102 137, 102 134 L102 114 L98 114 L98 134 C98 137, 96 140, 94 140 C92 140, 88 138, 88 136 L88 128 C88 118, 82 116, 82 108 L82 90 C78 88, 72 86, 72 82 Z" fill="url(#paperGrad)" />
-                {/* Visual shadow under the paper figure */}
-                <ellipse cx="100" cy="148" rx="28" ry="4" fill="#000" className="opacity-20 blur-[1px]" />
-              </g>
-
-              {/* Hand Pointing (representing the hand in the photo) */}
-              <g className="animate-point">
-                {/* Sleeve / Suit cuff */}
-                <path d="M82 200 L118 200 L118 165 C118 162, 112 160, 100 160 C88 160, 82 162, 82 165 Z" fill="url(#suitGrad)" />
-                {/* White shirt trim */}
-                <path d="M85 162 L115 162 L115 159 L85 159 Z" fill="#ffffff" />
-                {/* Hand/Finger */}
-                {/* Wrist */}
-                <path d="M92 160 L108 160 L108 148 L92 148 Z" fill="#fbcfe8" className="opacity-80" /> {/* Skin tone */}
-                {/* Hand Palm */}
-                <path d="M88 148 C88 140, 91 134, 98 134 L102 134 C109 134, 112 140, 112 148 Z" fill="#fed7aa" />
-                {/* Pointing Index Finger */}
-                <path d="M98 134 L98 108 C98 105, 102 105, 102 108 L102 134 Z" fill="#fed7aa" />
-                {/* Folded fingers */}
-                <path d="M88 140 Q94 142 94 146" stroke="#ea580c" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M106 142 Q102 144 102 148" stroke="#ea580c" strokeWidth="1.5" strokeLinecap="round" />
-              </g>
-            </svg>
+          {/* Feature Checklist */}
+          <div className="mt-7 space-y-2.5 text-xs text-[#d1edf7]">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#89dfef] shrink-0" />
+              <span>Cryptographically secured attendance and logbook verifications</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#89dfef] shrink-0" />
+              <span>Multi-criteria rubric evaluations with automated report generation</span>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="z-10 text-[11px] text-emerald-300/50 flex justify-between items-center border-t border-white/[0.06] pt-4">
-          <span>Copyright © 2025 InternHub</span>
+        <div className="z-10 text-[11px] text-[#9ecce2] flex justify-between items-center border-t border-white/10 pt-4">
+          <span>{BRAND_CONFIG.copyright}</span>
           <div className="flex gap-4">
-            <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
+            <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
+            <span className="hover:text-white cursor-pointer transition-colors">Compliance</span>
+            <span className="hover:text-white cursor-pointer transition-colors">Support</span>
           </div>
         </div>
       </div>
 
-      {/* Right Panel: Content Form Wrapper */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-5 sm:p-12 md:p-16 overflow-y-auto min-h-screen app-min-viewport-height">
-        <div className="w-full max-w-[420px] py-8 flex flex-col justify-center animate-fade-in">
-          {children}
+      {/* Right Panel: Active Authentication Screen */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-5 sm:p-10 md:p-12 overflow-y-auto min-h-screen app-min-viewport-height">
+        <div className="w-full max-w-[430px] py-6 flex flex-col justify-center animate-fade-in">
+          <div className="bg-white rounded-2xl border border-[#d8e5ee] p-7 sm:p-9 shadow-sm">
+            {children}
+          </div>
         </div>
       </div>
 
-      {/* Custom Keyframe Animations */}
+      {/* Animation Styles */}
       <style>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes point {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-          100% { transform: translateY(0px); }
-        }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(12px); }
+          from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        .animate-point {
-          animation: point 3s ease-in-out infinite;
-        }
         .animate-fade-in {
-          animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .animate-spin-slow {
-          animation: spin 30s linear infinite;
+          animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-
     </div>
   );
 };

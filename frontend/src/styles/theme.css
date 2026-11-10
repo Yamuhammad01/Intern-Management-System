@@ -2,80 +2,128 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* InternPath Canvas & Elevation */
+  --background: #f4f7fa;
+  --foreground: #183348;
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+  --card-foreground: #183348;
+  --popover: #ffffff;
+  --popover-foreground: #183348;
+
+  /* Primary Brand: Deep Ocean Navy & Steel Blue (from InternPath) */
+  --primary: #265275;
+  --primary-hover: #1e4361;
+  --primary-foreground: #ffffff;
+
+  /* Secondary: Soft Ice / Frosted Cyan */
+  --secondary: #e6f4f8;
+  --secondary-foreground: #1f5677;
+
+  /* Muted & Neutral Tones */
+  --muted: #edf3f7;
+  --muted-foreground: #607b91;
+
+  /* Accent: Radiant Cyan (from InternPath Cards & Badges) */
+  --accent: #2eb4d6;
+  --accent-hover: #249bb9;
+  --accent-foreground: #ffffff;
+
+  /* Specific InternPath Accents */
+  --accent-cyan: #2eb4d6;
+  --accent-teal: #4ebed5;
+  --accent-lime: #c6f172;
+  --accent-navy: #283b56;
+
+  /* Semantic Feedback */
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --info: #0ea5e9;
+  --info-foreground: #ffffff;
+
+  /* Form & Interactive Controls */
+  --border: #d7e4ed;
+  --input: #dce7ef;
+  --input-background: #ffffff;
+  --switch-background: #bcd3e1;
+  --ring: #2eb4d6;
+  --radius: 0.75rem;
+
+  /* Charts & Visualizations (Directly matching InternPath chart) */
+  --chart-1: #2eb4d6; /* Sky Cyan - Male Interns 56.4% */
+  --chart-2: #283b56; /* Midnight Navy - Female Interns 33.7% */
+  --chart-3: #c6f172; /* Chartreuse Mint - Other Interns 9.9% */
+  --chart-4: #3a6b93; /* Steel Blue */
+  --chart-5: #5cb7cc; /* Frost Cyan */
+
+  /* InternPath Sidebar Tokens */
+  --sidebar: #265275;
+  --sidebar-end: #316891;
+  --sidebar-foreground: #ffffff;
+  --sidebar-muted: #b9deec;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #205c80;
+  --sidebar-accent: rgba(255, 255, 255, 0.14);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #2eb4d6;
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --font-weight-bold: 700;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #111d27;
+  --foreground: #eef5f9;
+  --card: #182836;
+  --card-foreground: #eef5f9;
+  --popover: #182836;
+  --popover-foreground: #eef5f9;
+
+  --primary: #3d82b3;
+  --primary-hover: #4d94c7;
+  --primary-foreground: #ffffff;
+
+  --secondary: #203547;
+  --secondary-foreground: #bfe5f5;
+
+  --muted: #1c2e3d;
+  --muted-foreground: #8aa6ba;
+
+  --accent: #2eb4d6;
+  --accent-hover: #48c4e4;
+  --accent-foreground: #ffffff;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #263d50;
+  --input: #263d50;
+  --input-background: #15222e;
+  --ring: #38c2e0;
+
+  --chart-1: #38c2e0;
+  --chart-2: #4f6888;
+  --chart-3: #cbf37d;
+  --chart-4: #5492bf;
+  --chart-5: #71cbde;
+
+  --sidebar: #152533;
+  --sidebar-end: #1b3042;
+  --sidebar-foreground: #eef5f9;
+  --sidebar-muted: #8ba8bb;
+  --sidebar-primary: #38c2e0;
+  --sidebar-primary-foreground: #111d27;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #38c2e0;
 }
 
 @theme inline {
@@ -86,31 +134,46 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
   --color-sidebar: var(--sidebar);
+  --color-sidebar-end: var(--sidebar-end);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
@@ -126,12 +189,8 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
 
   html {
     font-size: var(--font-size);
@@ -140,65 +199,82 @@
   h1 {
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   h2 {
     font-size: var(--text-xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   h3 {
     font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   h4 {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   label {
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.4;
+  }
+
+  button {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  input {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-normal);
+  }
+}
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Responsive foundations
-   Shared, breakpoint-driven rules that keep every screen fluid from 320px
-   phones to 1440px+ desktops. These are additive — no design tokens above are
-   changed, so the desktop experience stays exactly as designed.
+   InternPath Gradient Utility Classes
+   Matches the 3 card variants and bottom banner from the design screenshot
    ──────────────────────────────────────────────────────────────────────────── */
+.bg-gradient-ip-navy {
+  background: linear-gradient(135deg, #275276 0%, #3a6b93 100%);
+}
 
-/* Media and embedded content can never be wider than its container. */
-img,
-svg,
-video,
-canvas,
-iframe,
-embed,
-object {
+.bg-gradient-ip-teal {
+  background: linear-gradient(135deg, #297e9c 0%, #5cb7cc 100%);
+}
+
+.bg-gradient-ip-blue {
+  background: linear-gradient(135deg, #255f86 0%, #3d80a9 100%);
+}
+
+.bg-gradient-ip-banner {
+  background: linear-gradient(135deg, #d3f3fb 0%, #edf9fc 100%);
+}
+
+.bg-sidebar-gradient {
+  background: linear-gradient(180deg, #265275 0%, #2f648c 100%);
+}
+
+/* Fluid Responsive & Mobile Utilities */
+img, svg, video, canvas, iframe, embed, object {
   max-width: 100%;
 }
 
-/* Raster/video media keeps its intrinsic aspect ratio when scaled down. */
-img,
-video {
+img, video {
   height: auto;
 }
 
-/* Long unbreakable strings (emails, matric numbers, reference codes) wrap
-   instead of forcing the page wider than the viewport. */
 .break-anywhere {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-/* App shells sized against the *visible* viewport so mobile browser chrome
-   (address bar / toolbars) never hides the bottom of the layout. */
 .app-viewport-height {
   height: 100vh;
   height: 100dvh;
@@ -209,28 +285,12 @@ video {
   min-height: 100dvh;
 }
 
-/* Contained horizontal scrollers (wide data tables) get momentum scrolling on
-   touch devices; the scroll stays inside the component and never leaks to the
-   page itself. */
 .scroll-x-contained {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Phones only: sub-12px utility labels are metadata (dates, chip labels, table
-   headers). Raising them to 11.5px keeps every label readable at 320–430px
-   without zooming, while tablets/desktop keep the original compact scale. */
-@media (max-width: 639px) {
-  [class*="text-[9"],
-  [class*="text-[10"],
-  [class*="text-[11"] {
-    font-size: 11.5px;
-  }
-}
-
-/* Mobile navigation drawer entrance. Disabled for users who ask for reduced
-   motion. */
 @keyframes drawer-in {
   from {
     transform: translateX(-100%);
@@ -247,20 +307,5 @@ video {
 @media (prefers-reduced-motion: reduce) {
   .animate-drawer-in {
     animation: none;
-  }
-}
-
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
   }
 }

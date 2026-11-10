@@ -1,144 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InternPath — Enterprise Internship & Talent Placement System</title>
+    <meta name="description" content="Manage enterprise internship programs with intelligent tools for logbook tracking, supervisor reviews, and performance evaluations." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path d='M24 4L39 12.66V15.5L24 23.5L9 15.5V12.66L24 4Z' fill='%2341b2cf'/><path d='M9 17.5L23 25V42L9 34V17.5Z' fill='%231e5872'/><path d='M25 25L39 17.5V34L25 42V25Z' fill='%23257591'/></svg>" />
+    <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+    
+    <!-- Print styles for PDF export -->
+    <style media="print">
+      @page {
+        size: A4;
+        margin: 2cm;
+      }
+      
+      body {
+        background: white !important;
+      }
+      
+      /* Hide navigation, buttons, and non-print elements */
+      nav, header, .no-print, button, .sticky, [class*="sticky"] {
+        display: none !important;
+      }
+      
+      body.report-view-mode > div > div > div {
+        display: none !important;
+      }
+      
+      body.report-view-mode > div > div > div:last-child {
+        display: block !important;
+      }
+      
+      /* Show only the report content when body has report-view-mode */
+      main {
+        overflow: visible !important;
+        height: auto !important;
+      }
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
+      /* Report view scrolls inside the app shell on screen; in print the
+         document must flow naturally across pages. */
+      .report-scroll {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+      }
       
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Intern Management System Redesign</title>
-      <meta name="description" content="Manage internship programs effectively with tools for tracking intern performance, attendance, tasks, and feedback, tailored for coordinators and supervisors." />
-      <meta name="robots" content="noindex, nofollow" />
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+      /* Ensure proper typography for print */
+      .max-w-4xl, .max-w-2xl {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
       
-      <!-- Print styles for PDF export -->
-      <style media="print">
-        @page {
-          size: A4;
-          margin: 2cm;
-        }
-        
-        body {
-          background: white !important;
-        }
-        
-        /* Hide navigation, buttons, and non-print elements */
-        nav, header, .no-print, button, .sticky, [class*="sticky"] {
-          display: none !important;
-        }
-        
-        body.report-view-mode > div > div > div {
-          display: none !important;
-        }
-        
-        body.report-view-mode > div > div > div:last-child {
-          display: block !important;
-        }
-        
-        /* Show only the report content when body has report-view-mode */
-        main {
-          overflow: visible !important;
-          height: auto !important;
-        }
+      /* Ensure cards print properly */
+      .rounded-xl, .rounded-lg, .rounded-2xl {
+        border: 1px solid #d8e5ee !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+      }
+      
+      /* Page breaks */
+      .mb-6, .mb-8, .space-y-6 > div {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      
+      /* Text colors */
+      .text-gray-500, .text-gray-400, .text-gray-600 {
+        color: #556c7d !important;
+      }
+      
+      /* Background colors */
+      .bg-\[\#265275\], .bg-\[\#0f2d1e\] {
+        background-color: #265275 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .bg-emerald-50, .bg-sky-50 {
+        background-color: #f0f7fb !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .bg-emerald-600, .bg-sky-600 {
+        background-color: #265275 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .text-white {
+        color: white !important;
+      }
+      
+      /* Font sizes remain but ensure readability */
+      body {
+        font-size: 11pt;
+        line-height: 1.6;
+      }
+      
+      /* Remove shadows for print */
+      .shadow-md, .shadow-sm, .shadow-xs {
+        box-shadow: none !important;
+      }
+    </style>
+  </head>
 
-        /* Report view scrolls inside the app shell on screen; in print the
-           document must flow naturally across pages. */
-        .report-scroll {
-          overflow: visible !important;
-          height: auto !important;
-          max-height: none !important;
-        }
-        
-        /* Ensure proper typography for print */
-        .max-w-4xl, .max-w-2xl {
-          max-width: 100% !important;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-        
-        /* Ensure cards print properly */
-        .rounded-xl, .rounded-lg {
-          border: 1px solid #e5e7eb !important;
-          box-shadow: none !important;
-          break-inside: avoid;
-        }
-        
-        /* Page breaks */
-        .mb-6, .mb-8, .space-y-6 > div {
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
-        
-        /* Text colors */
-        .text-gray-500, .text-gray-400, .text-gray-600 {
-          color: #666 !important;
-        }
-        
-        /* Background colors */
-        .bg-\[\#0f2d1e\] {
-          background-color: #0f2d1e !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        
-        .bg-emerald-50 {
-          background-color: #ecfdf5 !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        
-        .bg-emerald-600 {
-          background-color: #059669 !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        
-        .text-emerald-600, .text-emerald-500 {
-          color: #059669 !important;
-        }
-        
-        .text-emerald-300 {
-          color: #6ee7b7 !important;
-        }
-        
-        .text-emerald-200 {
-          color: #a7f3d0 !important;
-        }
-        
-        .text-white {
-          color: white !important;
-        }
-        
-        .border-emerald-500 {
-          border-color: #059669 !important;
-        }
-        
-        .border-gray-200, .border-gray-300 {
-          border-color: #d1d5db !important;
-        }
-        
-        .border-gray-100 {
-          border-color: #f3f4f6 !important;
-        }
-        
-        /* Font sizes remain but ensure readability */
-        body {
-          font-size: 11pt;
-          line-height: 1.6;
-        }
-        
-        /* Remove shadows for print */
-        .shadow-md {
-          box-shadow: none !important;
-        }
-      </style>
-      
-    </head>
-
-    <body>
-      
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-      
-    </body>
-  </html>
-  
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

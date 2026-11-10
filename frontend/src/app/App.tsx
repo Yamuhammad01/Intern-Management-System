@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "./components/AuthContext";
+import { LogoIcon } from "./components/brand/Logo";
 import { AuthLayout } from "./pages/auth/AuthLayout";
 import { WelcomePage } from "./pages/auth/WelcomePage";
 import { LoginPage } from "./pages/auth/LoginPage";
@@ -278,13 +279,13 @@ function AppContent() {
   // Full screen loading indicator
   if (loading) {
     return (
-      <div className="app-viewport-height w-full bg-[#0f2d1e] flex flex-col items-center justify-center text-white gap-4 relative select-none px-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg animate-pulse">
-          <Briefcase className="w-6 h-6 text-white" />
+      <div className="app-viewport-height w-full bg-sidebar-gradient flex flex-col items-center justify-center text-white gap-4 relative select-none px-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/20 flex items-center justify-center shadow-lg animate-pulse">
+          <LogoIcon size={34} />
         </div>
-        <div className="flex items-center gap-2 text-xs text-emerald-300 font-medium">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-          Securing authentication tunnel...
+        <div className="flex items-center gap-2 text-xs text-[#b8e5f4] font-medium">
+          <Loader2 className="w-4 h-4 animate-spin text-[#2eb4d6]" />
+          Connecting to InternPath secure session...
         </div>
       </div>
     );

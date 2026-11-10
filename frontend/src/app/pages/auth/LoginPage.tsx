@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../../components/AuthContext";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Eye, EyeOff, ArrowLeft, Mail, Lock } from "lucide-react";
+import { LogoIcon } from "../../components/brand/Logo";
+import { Button } from "../../components/ui/button";
 
 interface LoginPageProps {
   onNavigate: (page: "welcome" | "register" | "forgot") => void;
@@ -10,6 +12,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const { login, error, clearError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -40,31 +43,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="flex flex-col w-full">
-      {/* Title logo SVG */}
-      <div className="flex justify-center mb-6">
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 0C34.1503 0 44 9.84974 44 22C44 34.1503 34.1503 44 22 44C9.84974 44 0 34.1503 0 22C0 9.84974 9.84974 0 22 0Z" fill="#10b981" fillOpacity="0.08"/>
-          {/* Logo representation from TeamHub image */}
-          <path d="M22 13L22 31M13 22L31 22M16 16L28 28M16 28L28 16" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-10" />
-          <path d="M16 22L22 16L28 22L22 28Z" stroke="#10b981" strokeWidth="2.5" strokeLinejoin="round" />
-          <circle cx="22" cy="22" r="2" fill="#047857" />
-        </svg>
-      </div>
-
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold tracking-tight text-[#111827]">
+      {/* Brand Icon Header */}
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="w-12 h-12 rounded-xl bg-[#e6f4f8] flex items-center justify-center mb-3 shadow-2xs">
+          <LogoIcon size={30} />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight text-[#183348]">
           Welcome Back
         </h2>
-        <p className="text-xs text-gray-500 mt-1 leading-snug">
-          Log in to your InternHub dashboard to continue managing your internship
+        <p className="text-xs text-[#607b91] mt-1 leading-snug">
+          Sign in to access your InternPath dashboard and active programs
         </p>
       </div>
 
-      {/* Errors display */}
+      {/* Errors Display */}
       {(localError || error) && (
-        <div className="mb-4 bg-red-50 border border-red-100 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700 animate-shake">
+        <div className="mb-4 bg-red-50 border border-red-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700 animate-shake">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{localError || error}</span>
+          <span className="leading-relaxed">{localError || error}</span>
         </div>
       )}
 
@@ -72,104 +68,111 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Email Address */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11.5px] font-semibold text-gray-700" htmlFor="email">
+          <label className="text-xs font-semibold text-[#1d3d56]" htmlFor="email">
             Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. sarah.johnson@email.com"
-            className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-3 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-          />
+          <div className="relative flex items-center">
+            <Mail className="w-4 h-4 text-[#8aa3b5] absolute left-3.5 pointer-events-none" />
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. name@company.com"
+              className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all duration-150"
+            />
+          </div>
         </div>
 
         {/* Password */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11.5px] font-semibold text-gray-700" htmlFor="password">
+          <label className="text-xs font-semibold text-[#1d3d56]" htmlFor="password">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Create a strong password"
-            className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-3 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-          />
+          <div className="relative flex items-center">
+            <Lock className="w-4 h-4 text-[#8aa3b5] absolute left-3.5 pointer-events-none" />
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your account password"
+              className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-10 py-2.5 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all duration-150"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 p-1 text-[#8aa3b5] hover:text-[#265275] transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
-        {/* Options */}
-        <div className="flex items-center justify-between text-xs mt-1.5">
-          <label className="flex items-center gap-2 font-medium text-gray-600 cursor-pointer select-none">
+        {/* Remember Me & Forgot Password */}
+        <div className="flex items-center justify-between text-xs mt-0.5">
+          <label className="flex items-center gap-2 font-medium text-[#4b6a82] cursor-pointer select-none">
             <input
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
+              className="rounded border-[#c8d8e3] text-[#265275] focus:ring-[#2eb4d6] w-3.5 h-3.5 accent-[#265275]"
             />
             Remember Me
           </label>
           <button
             type="button"
             onClick={() => onNavigate("forgot")}
-            className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+            className="font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
           >
-            Forgot Password
+            Forgot Password?
           </button>
         </div>
 
-        {/* Login Button */}
-        <button
+        {/* Submit Button */}
+        <Button
           type="submit"
+          variant="navy"
+          size="lg"
           disabled={isSubmitting}
-          className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold py-3 rounded-xl transition-all duration-200 mt-4 flex items-center justify-center gap-2 hover:translate-y-[-1px] disabled:opacity-75 disabled:pointer-events-none"
+          className="w-full text-white text-[13.5px] font-semibold mt-2 shadow-xs"
         >
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Logging in...
+              Authenticating...
             </>
           ) : (
-            "Log In"
+            "Sign In"
           )}
-        </button>
+        </Button>
+      </form>
 
-        {/* Navigation back */}
-        <div className="text-center mt-6 text-xs text-gray-500">
-          Don't have an account?{" "}
+      {/* Footer Navigation */}
+      <div className="flex flex-col items-center gap-3 mt-6 pt-5 border-t border-[#e5edf3] text-xs text-[#638096]">
+        <div>
+          <span>Don't have an account? </span>
           <button
             type="button"
             onClick={() => onNavigate("register")}
-            className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors underline decoration-2 decoration-emerald-500/20"
+            className="font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
           >
-            Register now
+            Create an account
           </button>
         </div>
 
-        {/* Back to Home link */}
-        <div className="text-center mt-2">
-          <button
-            type="button"
-            onClick={() => onNavigate("welcome")}
-            className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            ← Back to Welcome Page
-          </button>
-        </div>
-      </form>
-
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .animate-shake {
-          animation: shake 0.2s ease-in-out 2;
-        }
-      `}</style>
+        <button
+          type="button"
+          onClick={() => onNavigate("welcome")}
+          className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-[#819ab0] hover:text-[#265275] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Welcome Overview
+        </button>
+      </div>
     </div>
   );
 };

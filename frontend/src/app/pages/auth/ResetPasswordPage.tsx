@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../../components/AuthContext";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
+import { LogoIcon } from "../../components/brand/Logo";
+import { Button } from "../../components/ui/button";
 
 interface ResetPasswordPageProps {
   token: string;
@@ -11,6 +13,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ token, onN
   const { resetPassword, error, clearError } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -43,7 +46,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ token, onN
       await resetPassword(password, token);
       setSuccess(true);
     } catch (err: any) {
-      setLocalError(err.message || "Failed to reset password. Token may have expired.");
+      setLocalError(err.message || "Failed to reset password. Link may have expired.");
     } finally {
       setIsSubmitting(false);
     }
@@ -51,99 +54,131 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ token, onN
 
   return (
     <div className="flex flex-col w-full">
-      {/* SVG Icon */}
-      <div className="flex justify-center mb-6">
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 0C34.1503 0 44 9.84974 44 22C44 34.1503 34.1503 44 22 44C9.84974 44 0 34.1503 0 22C0 9.84974 9.84974 0 22 0Z" fill="#10b981" fillOpacity="0.08"/>
-          <path d="M14 26C14 20.4772 17.5817 17 22 17C26.4183 17 30 20.4772 30 26V30H14V26Z" fill="#10b981" fillOpacity="0.15" />
-          <path d="M14 26C14 20.4772 17.5817 17 22 17C26.4183 17 30 20.4772 30 26M18 17V12C18 9.79086 19.7909 8 22 8C24.2091 8 26 9.79086 26 12V17" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="22" cy="23" r="2.5" fill="#047857" />
-        </svg>
-      </div>
-
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold tracking-tight text-[#111827]">
-          Reset Password
+      {/* Brand Icon Header */}
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="w-12 h-12 rounded-xl bg-[#e6f4f8] flex items-center justify-center mb-3 shadow-2xs">
+          <LogoIcon size={30} />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight text-[#183348]">
+          Choose New Password
         </h2>
-        <p className="text-xs text-gray-500 mt-1 leading-snug">
-          Create a new strong password for your account to secure access
+        <p className="text-xs text-[#607b91] mt-1 leading-snug">
+          Create a secure password to restore access to your account
         </p>
       </div>
 
+      {/* Success Notification */}
       {success ? (
-        <div className="flex flex-col items-center gap-4 bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-center text-xs text-emerald-800">
-          <CheckCircle className="w-8 h-8 text-emerald-500 shrink-0" />
+        <div className="flex flex-col items-center gap-3 bg-[#eefafc] border border-[#bfe7f3] rounded-2xl p-5 text-center text-xs text-[#1a5b75] animate-fade-in">
+          <div className="w-10 h-10 rounded-full bg-[#d2f3fa] flex items-center justify-center text-[#248da9]">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
           <div>
-            <p className="font-semibold text-sm mb-1">Password Changed!</p>
-            <p className="leading-relaxed">
-              Your password has been reset successfully. You can now use your new password to log in.
+            <p className="font-bold text-sm text-[#18485d] mb-1">Password Updated!</p>
+            <p className="text-[11.5px] text-[#4b7a8f] leading-relaxed">
+              Your account password has been successfully updated. You can now sign in with your new credentials.
             </p>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="cyan"
+            size="default"
             onClick={() => onNavigate("login")}
-            className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-semibold py-2.5 rounded-xl transition-all duration-200"
+            className="mt-2 text-white font-medium"
           >
-            Go to Login
-          </button>
+            Sign In with New Password
+          </Button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Errors display */}
+        <>
+          {/* Errors Display */}
           {(localError || error) && (
-            <div className="bg-red-50 border border-red-100 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700">
+            <div className="mb-4 bg-red-50 border border-red-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-700">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{localError || error}</span>
+              <span className="leading-relaxed">{localError || error}</span>
             </div>
           )}
 
-          {/* Password */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11.5px] font-semibold text-gray-700" htmlFor="password">
-              New Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
-              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-3 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-            />
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* New Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1d3d56]" htmlFor="password">
+                New Password
+              </label>
+              <div className="relative flex items-center">
+                <Lock className="w-4 h-4 text-[#8aa3b5] absolute left-3.5 pointer-events-none" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter at least 8 characters"
+                  className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-10 py-2.5 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all duration-150"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 p-1 text-[#8aa3b5] hover:text-[#265275] transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-          {/* Confirm Password */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11.5px] font-semibold text-gray-700" htmlFor="confirmPassword">
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter your new password"
-              className="w-full bg-[#f3f3f5] border-0 outline-none rounded-xl px-4 py-3 text-xs placeholder:text-gray-400 focus:bg-white focus:ring-1.5 focus:ring-emerald-500 transition-all duration-200"
-            />
-          </div>
+            {/* Confirm Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#1d3d56]" htmlFor="confirmPassword">
+                Confirm New Password
+              </label>
+              <div className="relative flex items-center">
+                <Lock className="w-4 h-4 text-[#8aa3b5] absolute left-3.5 pointer-events-none" />
+                <input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter your new password"
+                  className="w-full bg-[#f8fafc] border border-[#d7e4ed] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#183348] placeholder:text-[#8ea5b6] outline-none focus:bg-white focus:border-[#2eb4d6] focus:ring-2 focus:ring-[#2eb4d6]/20 transition-all duration-150"
+                />
+              </div>
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold py-3 rounded-xl transition-all duration-200 mt-2 flex items-center justify-center gap-2 hover:translate-y-[-1px] disabled:opacity-75 disabled:pointer-events-none"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Resetting password...
-              </>
-            ) : (
-              "Reset Password"
-            )}
-          </button>
-        </form>
+            <p className="text-[10px] text-[#718c9f] leading-tight">
+              Password must be 8+ characters and contain uppercase, lowercase, number, and special character.
+            </p>
+
+            <Button
+              type="submit"
+              variant="navy"
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full text-white text-[13.5px] font-semibold mt-1 shadow-xs"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Updating Password...
+                </>
+              ) : (
+                "Save New Password"
+              )}
+            </Button>
+          </form>
+        </>
       )}
+
+      {/* Footer Navigation */}
+      <div className="flex flex-col items-center gap-2.5 mt-6 pt-5 border-t border-[#e5edf3] text-xs text-[#638096]">
+        <button
+          type="button"
+          onClick={() => onNavigate("login")}
+          className="inline-flex items-center gap-1.5 font-semibold text-[#265275] hover:text-[#2eb4d6] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Sign In
+        </button>
+      </div>
     </div>
   );
 };
